@@ -152,7 +152,7 @@
       <img src="images/gael-maignan.webp" alt="Portrait de Gaël Maignan" />
     </div>
     <div class="presentation-text fade-right">
-      <h2>À propos de moi</h2>
+      <h2>À propos</h2>
       <p>Actuellement en formation en ingénierie urbaine et passionné par l’esthétique du quotidien, je développe une pratique transversale mêlant regard artistique et urbanisme.</p>
       <p>Mon parcours est tissé de collaborations, de chantiers collectifs et d’une attention constante à la mémoire des lieux.</p>
 
@@ -204,6 +204,8 @@
   padding: 5rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 .section {
@@ -316,6 +318,43 @@
 
 
 </style>
+
+
+<section class="art-section">
+  <div class="art-header">
+    <h2 class="art-title">La Ville Sonore - Cartographier la mémoire sonore des rues</h2>
+  </div>
+
+  <div class="art-content">
+    <div class="art-image">
+      <img src="https://ville-sonore.fr/img/preview.png" alt="La Ville Sonore">
+    </div>
+
+    <div class="art-info">
+      <!--
+      <div class="art-details">
+        <div><h3>Date</h3><p>2025</p></div>
+        <div><h3>Technique</h3><p>Dessin</p></div>
+        <div><h3>Dimensions</h3><p>A4</p></div>
+        <div><h3>Projet</h3><a href="projets/chantier de conscience/chantier de conscience.html" class="lien">Chantier de Conscience</a></div>
+      </div>-->
+
+      <div class="art-description">
+        <hr class="separator" />
+        <h3>Description</h3>
+        <p>
+          La ville parle, mais rarement on l’écoute. Ses voix se mêlent, se superposent, se perdent parfois dans le bruit de fond de notre quotidien, elles composent une partition vivante, à la fois banale et unique, qui disparaît souvent sans laisser de trace.
+        </p>
+      </div>
+      <a href="https://ville-sonore.fr/" target="_blank" class="lien">En savoir plus >></a>
+
+
+
+      
+    </div>
+  </div>
+</section>
+
 
 
 <section id="creation-artistique" class="creation-artistique">
@@ -978,40 +1017,7 @@
 
 
 
-<section class="art-section">
-  <div class="art-header">
-    <h2 class="art-title">La Ville Sonore - Enregistrer et cartographier la mémoire sonore des rues</h2>
-  </div>
 
-  <div class="art-content">
-    <div class="art-image">
-      <img src="https://ville-sonore.fr/img/preview.png" alt="La Ville Sonore">
-    </div>
-
-    <div class="art-info">
-      <!--
-      <div class="art-details">
-        <div><h3>Date</h3><p>2025</p></div>
-        <div><h3>Technique</h3><p>Dessin</p></div>
-        <div><h3>Dimensions</h3><p>A4</p></div>
-        <div><h3>Projet</h3><a href="projets/chantier de conscience/chantier de conscience.html" class="lien">Chantier de Conscience</a></div>
-      </div>-->
-
-      <div class="art-description">
-        <hr class="separator" />
-        <h3>Description</h3>
-        <p>
-          La ville parle, mais rarement on l’écoute. Ses voix se mêlent, se superposent, se perdent parfois dans le bruit de fond de notre quotidien, elles composent une partition vivante, à la fois banale et unique, qui disparaît souvent sans laisser de trace.
-        </p>
-      </div>
-      <a href="https://ville-sonore.fr/" target="_blank" class="lien">En savoir plus >></a>
-
-
-
-      
-    </div>
-  </div>
-</section>
 
 
 <section class="art-section">
@@ -1146,6 +1152,11 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
+
+  .art-info {
+  flex: 1 1 auto;
+}
+
   .art-content {
     flex-direction: column;
     align-items: center;
