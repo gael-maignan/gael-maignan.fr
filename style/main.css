@@ -76,6 +76,7 @@ min-height:100vh;
 
     /* Nav toggle (mobile) */
     .nav-toggle{
+      color: white;
       display:none;
       background:transparent;
       border:0;
@@ -120,7 +121,11 @@ min-height:100vh;
 
 /* Small screen layout */
     @media (max-width: 900px){
-      header{ padding:12px 16px; }
+      header{ padding:8px 0; }
+      .mobile-controls {
+        width: 90%;
+        margin: auto;
+      }
       nav.primary{ display:none; } /* hide desktop nav */
       .nav-toggle{ display:inline-flex; }
       /* brand shrink */
