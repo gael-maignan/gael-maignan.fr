@@ -79,20 +79,15 @@ min-height:100vh;
       display:none;
       background:transparent;
       border:0;
-      padding:8px;
-      margin-left:8px;
+      padding-left: 0px;
       cursor:pointer;
       line-height:0;
     }
-    .nav-toggle .bar{
-      display:block;
-      width:22px;
-      height:2px;
-      background:currentColor;
-      margin:4px 0;
-      transition: transform .25s ease, opacity .2s ease;
-    }
-
+    .nav-toggle .icon {
+      width: 40px;
+  height: 40px;
+  fill: currentColor;
+}
     /* Mobile nav panel (hidden by default) */
     .mobile-nav{
       position:absolute;
