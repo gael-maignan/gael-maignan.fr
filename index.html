@@ -1,19 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gaël Maignan – Artiste pluridisciplinaire</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Inter:wght@300;400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Gaël Maignan</title>
 
   <meta name="description" content="Né à Paris en mars 2004, Gaël Maignan est un artiste et auteur français dont le travail mêle écriture, photographie et arts plastiques. Urbaniste de formation, il développe une pratique à la croisée de la création artistique et de l’exploration urbaine, où mémoire, territoires et récits sensibles se répondent.">
   <meta name="keywords" content="Gaël Maignan, gael maignan, auteur, Urbanisme, EIVP">
 
   <meta property="og:image" content="https://gael-maignan.fr/images/cover.webp">
 
-  <link rel="stylesheet" href="style/main.css">
 
   <link rel="shortcut icon" href="images/favicon.ico" type="image/png"/>
   <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
@@ -21,1210 +17,194 @@
   <link rel="icon" sizes="32x32" href="images/favicon-32.png" type="image/png">
   <link rel="icon" sizes="96x96" href="images/favicon-96.png" type="image/png">
 
-  <script type="module" src="https://gael-mgn.github.io/js/log.js"></script>
+  <!--<script type="module" src="https://gael-mgn.github.io/js/log.js"></script>-->
+
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+
+
+  <link rel="stylesheet" href="style/main.css">
+
+  <script>
+        // détection basique du mobile
+    const isMobile = window.innerWidth <= 768;
+
+  </script>
 
   <style>
 
-.hero {
-  position: relative;
-  padding: 7rem 2rem 4rem;
-  text-align: center;
-  max-width: 960px;
-  margin: 0 auto;
-  animation: fadeIn 1.2s ease-out both;
-  z-index: 1;
+    html.no-scroll, body.no-scroll{
+      height:100vh;
+      overflow:hidden;
+      touch-action:none;
+    }
+
+/* ---------- Intro (hero) ---------- */
+.intro{
+  position:fixed;
+  inset:0;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:8px;
+  background:transparent; /* background moved to ::before */
+  z-index:60;
+  pointer-events:none;
+  transition:height .7s cubic-bezier(.16,.84,.44,1), transform .45s ease, opacity .4s ease;
+  will-change:height, transform, opacity;
+  padding:2rem;
+  text-align:center;
+  overflow:hidden; /* important for the blurred pseudo-element */
 }
 
-/* Image de fond (contenue proprement) */
-.hero::before {
+/* blurred background image (only the background is blurred) */
+.intro::before{
   content: "";
   position: absolute;
   inset: 0;
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  background-image: url('images/paon.webp');
+  z-index: 0; /* sits behind the content of .intro */
+  background: url('images/toile.jpg') no-repeat center center;
   background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: -2;
-}
-
-/* Filtre blanc qui dépasse en bas */
-.hero::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  height: calc(100% + 1px);
-  background: linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 200%);
-  z-index: -1;
+  /* Slight scale to hide blur edges */
+  transform: scale(1.06);
+  filter: blur(8px);            /* <-- ajuster la valeur ici */
+  will-change: filter, transform;
+  /* improve rendering on some browsers */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  /* Optional: use hardware acceleration hint */
+  transform-origin: center center;
   pointer-events: none;
 }
 
-.hero h1 {
-  font-family: 'Playfair Display', serif;
-  font-size: 3.5rem;
-  margin-bottom: 1rem;
-  color: #000;
-}
-
-.hero h1::after {
-  content: "";
-  display: block;
-  width: 60px;
-  height: 3px;
-  background-color: var(--accent-color, #d35400);
-  margin: 0px auto;
-  border-radius: 3px;
-  animation: expand 1s ease forwards;
-}
-
-
-.hero p {
-  font-size: 1.15rem;
-  color: #555;
-  font-weight: 300;
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-
-
-@media (max-width: 600px) {
-  .hero h1 {
-    font-size: 2.3rem;
-  }
-}
-</style>
-
-
-
-</head>
-<body>
-<!--
-  <header>
-    <div class="logo"><a href="index.html" style="text-decoration:none; color:inherit;">Gaël Maignan</a></div>
-    <nav>
-      <a href="#projets">Projets</a>
-      <a href="contact.html">À propos</a>
-      <a href="contact.html">Contact</a>
-    </nav>
-  </header>-->
-
-  <header>
-  <div class="logo">
-    <a href="#" style="text-decoration:none; color:inherit;">Gaël Maignan</a>
-  </div>
-
-  <button class="menu-toggle" aria-label="Menu">
-    &#9776;
-  </button>
-
-  <nav>
-    <a href="#">Accueil</a>
-    <a href="art.html">Art</a>
-    <a href="urbanisme.html">Urbanisme</a>
-    <a href="contact.html">À propos / Contact</a>
-  </nav>
-  </header>
-
-  <script>
-  const toggle = document.querySelector('.menu-toggle');
-  const nav = document.querySelector('nav');
-
-  toggle.addEventListener('click', () => {
-    nav.classList.toggle('active');
-  });
-  </script>
-
-  <main>
-  <section class="hero">
-    <h1>Gaël Maignan</h1>
-    <p>Artiste pluridisciplinaire, je travaille à l'interface de la photographie, de l'écriture et de l’urbanisme.</p>
-  </section>
-
-  <!-- Nouvelle section de présentation -->
-<section class="presentation">
-  <div class="presentation-content">
-    <div class="presentation-image fade-left">
-      <img src="images/gael-maignan.webp" alt="Portrait de Gaël Maignan" />
-    </div>
-    <div class="presentation-text fade-right">
-      <h2>À propos</h2>
-      <p>Actuellement en formation en ingénierie urbaine à l'École des Ingénieurs de la Ville de Paris (EIVP) et passionné par l’esthétique du quotidien, je développe une pratique transversale mêlant regard artistique et urbanisme.</p>
-      <p>Mon parcours est tissé de collaborations, de chantiers collectifs et d’une attention constante à la mémoire des lieux.</p>
-
-      <a class="lien" href="intention-artistique.html">Démarche artistique - Note d'intention</a>
-
-      <div class="social-links">
-        <a href="https://www.youtube.com/@gael-maignan" target="_blank" aria-label="YouTube">
-          <i class="fab fa-youtube"></i>
-        </a>
-        <a href="https://soundcloud.com/gael-maignan" target="_blank" aria-label="SoundCloud">
-          <i class="fab fa-soundcloud"></i>
-        </a>
-        <a href="https://www.linkedin.com/in/gael-maignan" target="_blank" aria-label="LinkedIn">
-          <i class="fab fa-linkedin"></i>
-        </a>
-        <a href="https://www.instagram.com/gael.maignan" target="_blank" aria-label="Instagram">
-          <i class="fab fa-instagram"></i>
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-
-<section class="art-section">
-  <div class="art-header">
-    <h2 class="art-title"><em>Sous les titres</em> - Films Documentaires</h2>
-  </div>
-
-  <div class="art-content">
-    <div class="art-image">
-      <img src="http://sous-les-titres.fr/img/preview.webp" alt="Sous les titres">
-    </div>
-
-    <div class="art-info">
-      <!--
-      <div class="art-details">
-        <div><h3>Date</h3><p>2025</p></div>
-        <div><h3>Technique</h3><p>Dessin</p></div>
-        <div><h3>Dimensions</h3><p>A4</p></div>
-        <div><h3>Projet</h3><a href="projets/chantier de conscience/chantier de conscience.html" class="lien">Chantier de Conscience</a></div>
-      </div>-->
-
-      <div class="art-description">
-        <hr class="separator" />
-        <h3>Description</h3>
-        <p>Sous les titres - Films Documentaires</p>
-        <p>Sous les titres est une structure de production dédiée au film documentaire.</p>
-
-        <a href="http://sous-les-titres.fr/film/le-jour-des-13h" target="_blank" class="lien">Film – Le jour des 13 heures</a>
-      </div>
-      <!---->
-
-      <a href="http://sous-les-titres.fr/" class="listen-button" style="width: 100%;" target="_blank">Découvir
-    </a>
-
-
-
-      
-    </div>
-  </div>
-</section>
-
-
-<section class="sections">
-    <div class="section urbanisme">
-    <h2>Urbanisme Sensible</h2>
-    <p>Cartographies sensibles, projets collaboratifs, analyses : des outils d’écoute et d’action au service d’une ville vécue et partagée.</p>
-    <a href="urbanisme.html" class="lien">Découvrir les projets</a>
-  </div>
-
-  <div class="section creation">
-    <h2>Création artistique</h2>
-    <p>Photographie, écriture, production... autant de médiums que j’explore, au fil des idées et des formes.</p>
-    <a href="art.html" class="lien">Voir les séries</a>
-  </div>
-
-  <div class="section ecriture">
-    <h2>Écriture</h2>
-    <p>Poèmes, essais, récits sensibles. L’écriture comme acte de résistance douce, de mise en lumière, de tissage entre mémoire et imaginaire.</p>
-    <a href="#" class="lien">Lire les textes</a>
-  </div>
-  <br>
-</section>
-<style>
-  .sections {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2.5rem;
-  padding: 5rem 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  margin-bottom: 2rem;
-  padding-bottom: 0;
-}
-
-.section {
-  background: var(--section-bg);
-  padding: 2rem;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-soft);
-  transition: var(--transition);
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-
-
-
-.section h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.6rem;
-  margin-bottom: 1rem;
-  color: #111;
-}
-
-.section p {
-  font-size: 0.97rem;
-  color: #444;
-  font-weight: 300;
-  margin-bottom: 1.2rem;
-}
-
-  .section {
-  background-color: var(--section-bg);
-  padding: 2rem;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-soft);
-  transition: var(--transition);
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-
-
-.section {
-  position: relative;
-  overflow: hidden;
-}
-
-.section::before {
+/* optional dark overlay for contrast */
+.intro::after{
   content: "";
   position: absolute;
   inset: 0;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 0;
-  transition: opacity 0.8s ease;
-  z-index: 0;
+  z-index: 1; /* above the blurred image, below the text */
+  pointer-events: none;
+  /*background: linear-gradient(180deg, rgba(116,157,163,0.08), rgba(116,157,163,0.22));*/
 }
 
-/* Dégradé blanc en bas */
-.section.creation::before {
-  background-image: 
-    linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 300%),
-    url('images/paon.webp');
-}
-
-.section.ecriture::before {
-  background-image: 
-    linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 300%),
-    url('podcast/poete a grande vitesse/cover.png');
-}
-
-.section.urbanisme::before {
-  background-image: 
-    linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 300%),
-    url('https://gael-maignan-photographe.fr/series/ce%20que%20la%20ville%20murmure/images/3.webp');
-}
-
-/* Affiche l’image en fondu au survol */
-.section:hover::before {
-  opacity: 1;
-}
-
-@media (max-width: 768px) {
-.section::before {
-  opacity: 1;
-}
-}
-
-/* Contenu au-dessus de l’image */
-.section > * {
+/* ensure .intro content sits above pseudo-elements */
+.intro *{
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
-
-
-
-
-/* Amélioration lisibilité sur image */
-.section:hover {
-  color: white;
+/* keep your existing collapsed/inflow variants working */
+.intro--collapse{ height:40vh; }
+.intro--inflow{
+  position:relative;
+  inset:auto;
+  height:40vh;
+  width:100%;
+  z-index:10;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:8px;
+  margin-top: var(--header-height, 0px);
+  transition: margin-top .35s ease, height .2s ease, padding .2s ease;
+  pointer-events:auto;
+  padding:2rem 1.25rem;
 }
 
-
-</style>
-
-
-
-
-
-<section id="creation-artistique" class="creation-artistique">
-  <div class="section-header">
-    <h2>Création artistique</h2>
-    <p>Photographie, Écriture et Production sont autant de supports de supports que j'expérimente</p>
-  </div>
-
-  <!-- Filtres -->
-  <div class="filters">
-    <button class="filter-btn active" data-filter="all">Tous</button>
-    <button class="filter-btn" data-filter="photo">Photographie</button>
-    <button class="filter-btn" data-filter="plastique">Œuvres plastiques</button>
-    <button class="filter-btn" data-filter="ecriture">Écriture</button>
-    <button class="filter-btn" data-filter="audiovisuel">Audio / Vidéo</button>
-  </div>
-
-  <!-- Galerie -->
-  <div class="gallery">
-
-
-      <div class="gallery-item photo">
-        <a href="https://gael-maignan-photographe.fr/series/ce%20que%20la%20ville%20murmure/ce%20que%20la%20ville%20murmure.html" target="_blank">
-          <img src="https://gael-maignan-photographe.fr/images/ce-que-la-ville-murmure-gael-maignan.webp" alt="Couverture de la série Photographie - Ce que la Ville murmure, Gaël Maignan">
-          <div class="overlay">
-            <div class="overlay-content">
-              <h3>Série Photographie - Ce que la ville murmure</h3>
-              <p>Photographie numérique, 2024</p>
-            </div>
-          </div>
-        </a>
-      </div>
-
-      <div class="gallery-item photo">
-        <a href="https://gael-maignan-photographe.fr/series/belleville%20QPV/belleville%20QPV.html" target="_blank">
-          <img src="https://gael-maignan-photographe.fr/images/belleville-QPV-serie1-gael-maignan.webp" alt="Couverture de la série Photographie - Belleville QPV, Gaël Maignan">
-          <div class="overlay">
-            <div class="overlay-content">
-              <h3>Série Photographie - Belleville QPV</h3>
-              <p>Photographie numérique, Paris Belleville, 2024</p>
-            </div>
-          </div>
-        </a>
-      </div>
-
-      <div class="gallery-item plastique">
-        <a href="projets/chantier de conscience/chantier de conscience.html">
-          <img src="images/esquisse chantier de conscience.webp" alt="Esquisse préparatoire - Chantier de Conscience">
-          <div class="overlay">
-            <div class="overlay-content">
-              <h3>Esquisse préparatoire - Chantier de Conscience</h3>
-              <p>Projet artistique pluridisciplinaire explorant la condition humaine dans le secteur de la construction</p>
-            </div>
-          </div>
-        </a>
-      </div>
-
-      <div class="gallery-item ecriture">
-        <a href="https://www.google.fr/books/edition/Je_ne_suis_pas_acteur/SONZEQAAQBAJ?hl=fr&gbpv=0" target="_blank">
-          <img src="images/je ne suis pas acteur.webp" alt="Couverture du livre Je ne suis pas Acteur - Gaël Maignan">
-          <div class="overlay">
-            <div class="overlay-content">
-              <h3>Livre - Je ne suis pas Acteur</h3>
-              <p>Dans une ruelle, un théâtre, un métro, il arrive, maladroit, un texte froissé à la main.</p>
-            </div>
-          </div>
-        </a>
-      </div>
-
-      <div class="gallery-item audiovisuel">
-        <a href="podcast/poete a grande vitesse/index.html">
-          <img src="podcast/poete a grande vitesse/cover.webp" alt="Couverture du Podcast Poète à grande vitesse">
-          <div class="overlay">
-            <div class="overlay-content">
-              <h3>Poète à grande vitesse</h3>
-              <p>Entre prose poétique, souffle intime et paysages traversés, ce podcast est une invitation au voyage intérieur, au rythme des rails.</p>
-            </div>
-          </div>
-        </a>
-      </div>
-
-      <div class="gallery-item audiovisuel">
-        <a href="https://sous-les-titres.fr/films/le%20jour%20des%2013%20heures/le%20jour%20des%2013%20heures" target="_blank">
-          <img src="https://sous-les-titres.fr/films/le%20jour%20des%2013%20heures/le-jour-des-13-heures.webp" alt="Couverture du Podcast Poète à grande vitesse">
-          <div class="overlay">
-            <div class="overlay-content">
-              <h3>Le jours des 13 heures</h3>
-              <p>Film documentaire (2025)</p>
-            </div>
-          </div>
-        </a>
-      </div>
-
-  </div>
-</section>
-<style>
-  .creation-artistique {
-  padding: 4rem 2rem;
-  background: #f7f7f7;
-  text-align: center;
-}
-
-.creation-artistique h2 {
-  font-size: 2rem;
-  font-family: 'Playfair Display', serif;
-  margin-bottom: 0.5rem;
-}
-
-.creation-artistique p {
-  font-style: italic;
-  color: #555;
-  margin-bottom: 2rem;
-}
-
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-}
-
-.filter-btn {
-  padding: 0.6rem 1.2rem;
-  background: white;
-  border: 1px solid #aaa;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: 0.3s ease;
-}
-
-.filter-btn:hover,
-.filter-btn.active {
-  background: var(--accent-color);
-  color: white;
-  border-color: var(--accent-color);
-}.gallery-item {
-  position: relative;
-  overflow: hidden;
-  border-radius: 1rem;
-  margin: auto;
-  max-width: 400px;
-}
-.gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-  max-width: 1100px;
-  margin: auto;
-}
-.gallery-item a {
-  display: block;
-  position: relative;
-  text-decoration: none;
-  color: inherit;
-}
-
-.gallery-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* Overlay */
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.92);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
-.overlay-content {
-  text-align: center;
-  color: #000;
-}
-
-.overlay-content h3 {
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-  font-family: 'Playfair Display', serif;
-}
-
-.overlay-content p {
-  font-size: 0.95rem;
-  font-style: italic;
-  color: #333;
-}
-
-.gallery-item:hover .overlay {
-  opacity: 1;
-}
-
-
-@media (max-width: 768px) {
-  .gallery-item {
-    overflow: visible;
-  }
-
-  .overlay {
-    position: static;
-    background: transparent;
-    opacity: 1;
-    padding: 0.5rem 0;
-    display: block;
-    height: auto;
-    transition: none;
-  }
-
-  .overlay-content {
-    text-align: left;
-    padding: 0.5rem 0;
-  }
-
-  .overlay-content h3 {
-    font-size: 1rem;
-    margin: 0.25rem 0;
-  }
-
-  .overlay-content p {
-    font-size: 0.9rem;
-    color: #555;
-  }
-
-  .gallery-item:hover .overlay {
-    opacity: 1; /* s'assurer qu’il ne se cache pas au hover */
-  }
-}
-
-
-</style>
-<script>
-  const filterButtons = document.querySelectorAll('.filter-btn');
-  const items = document.querySelectorAll('.gallery-item');
-
-  filterButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      // Style actif
-      filterButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const filter = btn.dataset.filter;
-
-      items.forEach(item => {
-        item.style.display = (filter === 'all' || item.classList.contains(filter)) ? 'block' : 'none';
-      });
-    });
-  });
-</script>
-
-<!--
-<section class="articles" id="articles">
-  <h2 class="articles-title">Dernières Publications</h2>
-  <div class="articles-grid">
-
-    <article class="article-card">
-      <img src="https://gael-maignan-photographe.fr/series/ce%20que%20la%20ville%20murmure/images/1.webp" alt="Espace public" class="article-thumb">
-      <div class="article-body">
-        <h3>L’espace public comme théâtre du quotidien</h3>
-        <p class="article-date">Avril 2025</p>
-        <p>Réflexion sur les usages sensibles de l’espace urbain, entre corps, récits et mémoire des lieux.</p>
-        <a href="#" class="lien">Lire l’article</a>
-      </div>
-    </article>
-
-    <article class="article-card">
-      <img src="https://gael-maignan-photographe.fr/series/ce%20que%20la%20ville%20murmure/images/3.webp" alt="Espace public" class="article-thumb">
-      <div class="article-body">
-        <h3>Poétique du chantier</h3>
-        <p class="article-date">Février 2025</p>
-        <p>À travers les échafaudages et les gravats, une esthétique brute, vivante, pleine de récits en devenir.</p>
-        <a href="#" class="lien">Lire l’article</a>
-      </div>
-    </article>
-
-    <article class="article-card">
-      <img src="https://gael-maignan-photographe.fr/series/ce%20que%20la%20ville%20murmure/images/2.webp" alt="Mémoire urbaine" class="article-thumb">
-      <div class="article-body">
-        <h3>Fragments d’une mémoire urbaine</h3>
-        <p class="article-date">Décembre 2024</p>
-        <p>Un essai sensible sur les traces, les vides, les strates de la ville comme palimpseste du temps.</p>
-        <a href="#" class="lien">Lire l’article</a>
-      </div>
-    </article>
-
-  </div>
-</section>
-<style>
-  .articles {
-    background-color: var(--section-bg);
-    padding: 5rem 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .articles-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 2rem;
-    margin-bottom: 2.5rem;
-    color: #111;
-    text-align: center;
-  }
-
-  .articles-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-  }
-
-  .article-card {
-    display: flex;
-    flex-direction: column;
-    background-color: #fff;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-soft);
-    overflow: hidden;
-    transition: var(--transition);
-  }
-
-  .article-card:hover {
-    background-color: var(--hover-bg);
-    transform: translateY(-4px);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
-  }
-
-  .article-thumb {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    display: block;
-  }
-
-
-  .article-body {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-  }
-
-  .article-body h3 {
-    font-size: 1.3rem;
-    font-family: 'Playfair Display', serif;
-    color: var(--text-color);
-    margin-bottom: 0.6rem;
-  }
-
-  .article-date {
-    font-size: 0.85rem;
-    color: #999;
-    margin-bottom: 1rem;
-  }
-
-  .article-body p {
-    font-size: 0.95rem;
-    color: #444;
-    margin-bottom: 1.2rem;
-    font-weight: 300;
-  }
-</style>-->
-
-
-
-
-<section class="podcast-section">
-  <div class="podcast-info">
-    <img src="podcast/poete a grande vitesse/cover.webp" alt="Couverture du Podcast">
-    <h2>Poète à grande vitesse</h2>
-    <div class="podcast-subtitle">Fragments poétiques embarqués à bord du réel</div>
-    <p>Une voix circule entre gares et souvenirs. Le train devient page, le paysage devient vers.</p>
-
-    <a href="https://soundcloud.com/gael-maignan/sets/poete-a-grande-vitesse" class="listen-button" target="_blank">
-      <i class="fas fa-play-circle"></i> Écouter sur SoundCloud
-    </a>
-
-  </div>
-
-
-<div class="episodes-list">
-  <h3>Épisodes</h3>
-  <div class="season-selector">
-  <button class="season-button active" data-season="1">Saison 1</button>
-  <button class="season-button" data-season="2">Saison 2</button>
-</div>
-
-  <div class="season season-1">
-    <!-- Épisodes Saison 1 ici -->
-    <a class="episode" href="https://open.spotify.com/episode/5Sd6aTlbZHZrhkNH9zKmd6" target="_blank">
-      <img src="podcast/poete a grande vitesse/cover.webp" alt="Épisode 1">
-      <div class="episode-content">
-        <div class="episode-title"><i class="fas fa-headphones"></i> Épisode 1 · Antibes</div>
-        <div class="episode-meta">10 min — 28 avril 2025</div>
-        <div class="episode-description">Je quitte la gare à pas lents, sans presser l’arrivée. Mes pieds suivent une intuition plus qu’un itinéraire. Très vite, la ville ancienne s’offre — ses ruelles étroites, pavées d’échos. Je pénètre dans le Vieil Antibes comme on entre dans une mémoire [...]</div>
-      </div>
-    </a>
-    <a class="episode" href="https://open.spotify.com/episode/05HAnVvM8WC7iFP5w7Yl26" target="_blank">
-      <img src="podcast/poete a grande vitesse/cover.webp" alt="Épisode 2">
-      <div class="episode-content">
-        <div class="episode-title"><i class="fas fa-headphones"></i> Épisode 2 · Bergerac</div>
-        <div class="episode-meta">7 min — 5 mai 2025</div>
-        <div class="episode-description">Cyrano, noble nez dressé vers l’azur, trône au centre, gardien d’un esprit flamboyant, prince des bons mots et des bravades murmurées. Autour de lui, les maisons à colombages se penchent comme pour mieux écouter les vers oubliés.</div>
-      </div>
-    </a>
-    <a class="episode" href="https://soundcloud.com/ton-profil/episode-2" target="_blank">
-      <img src="podcast/poete a grande vitesse/cover.webp" alt="Épisode 3">
-      <div class="episode-content">
-        <div class="episode-title"><i class="fas fa-headphones"></i> Épisode 3 · Besançon</div>
-        <div class="episode-meta">7 min — 12 mai 2025</div>
-        <div class="episode-description">Je pousse la porte, et me voilà dans le vent frais de la Franche-Comté, avec, devant moi, une ville lovée dans un méandre, comme un poème roulé sur lui-même, qu’il me faudra dérouler avec douceur.</div>
-      </div>
-    </a>
-    <!-- Ajoute d’autres épisodes de la Saison 1 -->
-  </div>
-
-  <div class="season season-2" style="display: none;">
-    <!-- Épisodes Saison 2 ici -->
-    <div class="episode">
-      <div class="episode-content">
-        <div class="episode-title">À venir...</div>
-      </div>
-    </div>
-    <!-- Autres épisodes de la Saison 2 -->
-  </div>
-
-</div>
-</section>
-<style>
-/* === Structure principale === */
-.podcast-section {
-  display: flex;
-  flex-wrap: wrap;
-  max-width: 1100px;
-  margin: 30px auto;
-  padding: 40px 20px;
-  gap: 60px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
-  color: #111;
-}
-
-/* === Podcast Info (colonne gauche) === */
-.podcast-info {
-  flex: 1 1 300px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.podcast-info img {
-  width: 100%;
-  max-width: 280px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-}
-
-.podcast-info h2 {
-  font-size: 2rem;
-  margin: 0 0 10px;
-  font-family: 'Playfair Display', serif;
-  position: relative;
-}
-
-
-@keyframes expand {
-  from {
-    transform: scaleX(0);
-    opacity: 0;
-  }
-  to {
-    transform: scaleX(1);
-    opacity: 1;
-  }
-}
-
-.podcast-info h2::after {
-  content: "";
-  display: block;
-  width: 60px;
-  height: 3px;
-  background-color: var(--accent-color, #d35400);
-  margin: 10px auto;
-  border-radius: 3px;
-  animation: expand 1s ease forwards;
-}
-
-.podcast-subtitle {
-  font-style: italic;
-  color: #777;
-  font-size: 0.95rem;
-  margin-bottom: 15px;
-}
-
-.podcast-info p {
-  font-size: 1rem;
-  line-height: 1.6;
-  margin-bottom: 20px;
-}
-
-.listen-button {
-  margin: 20px auto;
-  padding: 10px 20px;
-  background-color: var(--accent-color, #d35400);
-  color: white;
-  text-decoration: none;
-  border-radius: 25px;
-  font-size: 0.95rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: background 0.3s ease;
-}
-
-.listen-button:hover {
-  background-color: #b84700;
-}
-
-/* === Liste des épisodes (colonne droite) === */
-.episodes-list {
-  flex: 2 1 500px;
-}
-
-.episodes-list h3 {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.4rem;
-  font-weight: normal;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 5px;
-}
-
-/* === Carte d’un épisode === */
-.episode {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  padding: 18px;
-  margin-bottom: 20px;
-  border-radius: 10px;
-  background-color: #fafafa;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
-  transition: background 0.3s ease;
-}
-
-.episode:hover {
-  background-color: var(--hover-bg);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.episode img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 8px;
-  flex-shrink: 0;
-}
-
-.episode-content {
-  flex: 1;
-}
-
-.episode-title {
-  font-size: 1.05rem;
-  font-weight: bold;
-  margin-bottom: 6px;
-  font-family: 'Playfair Display', serif;
-}
-
-.episode-title i {
-  color: var(--accent-color, #d35400);
-  margin-right: 6px;
-}
-
-.episode-meta {
-  font-size: 0.85rem;
-  color: #666;
-  margin-bottom: 8px;
-  font-style: italic;
-}
-
-.episode-description {
-  font-size: 0.85rem;
-  color: #333;
-  line-height: 1.5;
-}
-
-/* === Responsive === */
-@media (max-width: 768px) {
-  .podcast-section {
-    flex-direction: column;
-    padding: 30px 15px;
-  }
-
-  .podcast-info,
-  .episodes-list {
-    width: 100%;
-  }
-
-  .episode img {
-    display: none;
-  }
-
-  .episode-content {
-    align-items: center;
-  }
-}
-.season-selector {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.season-button {
-  padding: 8px 16px;
-  background-color: #eee;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  transition: background-color 0.3s ease;
-}
-
-.season-button.active {
-  background-color: var(--accent-color, #d35400);
-  color: white;
-}
-
-</style>
-
-<script>
-  const seasonButtons = document.querySelectorAll('.season-button');
-  const seasons = document.querySelectorAll('.season');
-
-  seasonButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      const selectedSeason = button.getAttribute('data-season');
-
-      // Met à jour les boutons
-      seasonButtons.forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
-
-      // Affiche la saison sélectionnée
-      seasons.forEach(season => {
-        season.style.display = season.classList.contains('season-' + selectedSeason)
-          ? 'block'
-          : 'none';
-      });
-    });
-  });
-</script>
-
-
-
-
-
-
-
-<section class="art-section">
-  <div class="art-header">
-    <h2 class="art-title">À la Une - Urbanivore</h2>
-  </div>
-
-  <div class="art-content">
-    <div class="art-image">
-      <img src="https://urbanivore.fr/img/urbanivore.webp" alt="Urbanivore">
+/* keep animation and title styles as-is (no change needed) */
+
+
+    .intro-title{
+      font-weight:800;
+      font-size:clamp(3.2rem, 7.2vw, 4rem);
+      transform-origin:center center;
+      opacity:0;
+      animation:introPop 1900ms cubic-bezier(.16,.84,.44,1) forwards;
+      will-change:transform, opacity;
+      margin:0;
+      background: url('images/image2.png') no-repeat center center;
+      background-size: cover;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    @keyframes introPop{
+      0%{opacity:0; transform:scale(.8) translateY(8px) rotate(.5deg); filter:blur(6px)}
+      40%{opacity:1; transform:scale(1.06) translateY(-6px) rotate(-.3deg); filter:blur(0)}
+      70%{transform:scale(.98) translateY(0)}
+      100%{opacity:1; transform:scale(1) translateY(0)}
+    }
+
+
+
+
+
+    /* Hide main initially and push it */
+    main{
+            margin-top:calc(2rem);
+
+      opacity:0;
+      transform:translateY(12px);
+      transition:margin-top .6s cubic-bezier(.2,.9,.25,1), opacity .6s ease .08s, transform .6s ease .08s;
+      pointer-events:none;
+    }
+    body.show-content main{
+      opacity:1;
+      transform:none;
+      pointer-events:auto;
+    }
+    body.intro-in-flow main{ margin-top:0rem; }
+
+
+  </style>
+</head>
+<body class="no-scroll">
+
+
+
+  <!-- Header -->
+  <header role="banner">
+
+    <!-- Desktop nav -->
+    <nav class="primary" role="navigation" aria-label="Navigation principale">
+      <a href="#">À la Une</a>
+      <a href="#urbanisme">Urbanisme Sensible</a>
+      <a href="#ecriture">Écriture</a>
+      <a href="#contact">Contact</a>
+    </nav>
+
+    <!-- Mobile controls: hamburger -->
+    <div class="mobile-controls" style="display:flex;align-items:center;">
+      <button class="nav-toggle" id="navToggle" aria-controls="mobileNav" aria-expanded="false" aria-label="Ouvrir le menu">
+        <span class="bar" aria-hidden="true"></span>
+        <span class="bar" aria-hidden="true"></span>
+        <span class="bar" aria-hidden="true"></span>
+      </button>
     </div>
 
-    <div class="art-info">
-      <!--
-      <div class="art-details">
-        <div><h3>Date</h3><p>2025</p></div>
-        <div><h3>Technique</h3><p>Dessin</p></div>
-        <div><h3>Dimensions</h3><p>A4</p></div>
-        <div><h3>Projet</h3><a href="projets/chantier de conscience/chantier de conscience.html" class="lien">Chantier de Conscience</a></div>
-      </div>-->
-
-      <div class="art-description">
-        <hr class="separator" />
-        <h3>Description</h3>
-        <p>
-          Urbanivore est un projet visant à révéler le potentiel nourricier de nos métropoles en cartographiant les arbres comestibles accessibles dans l'espace public. Grâce aux données en Open Data et à une base de plus de 100 recettes associées à chaque essence, chacun peut réapprendre à cueillir, transformer, goûter… et mieux habiter sa ville.
-        </p>
+    <!-- Mobile nav panel (duplicate links for mobile) -->
+    <div id="mobileNav" class="mobile-nav" aria-hidden="true">
+      <div class="mobile-links" role="menu" aria-label="Menu principal">
+        <a href="#" role="menuitem">À la Une</a>
+        <a href="#urbanisme" role="menuitem">Urbanisme Sensible</a>
+        <a href="#ecriture" role="menuitem">Écriture</a>
+        <a href="#contact" role="menuitem">Contact</a>
       </div>
-      <a href="https://urbanivore.fr/" target="_blank" class="lien">En savoir plus >></a>
-
-
-
-      
     </div>
-  </div>
-</section>
-<section class="art-section">
-  <div class="art-header">
-    <h2 class="art-title">La Ville Sonore - Cartographier la mémoire sonore des rues</h2>
-  </div>
+  </header>
 
-  <div class="art-content">
-    <div class="art-image">
-      <img src="https://ville-sonore.fr/img/preview.png" alt="La Ville Sonore">
-    </div>
-
-    <div class="art-info">
-      <!--
-      <div class="art-details">
-        <div><h3>Date</h3><p>2025</p></div>
-        <div><h3>Technique</h3><p>Dessin</p></div>
-        <div><h3>Dimensions</h3><p>A4</p></div>
-        <div><h3>Projet</h3><a href="projets/chantier de conscience/chantier de conscience.html" class="lien">Chantier de Conscience</a></div>
-      </div>-->
-
-      <div class="art-description">
-        <hr class="separator" />
-        <h3>Description</h3>
-        <p>
-          La ville parle, mais rarement on l’écoute. Ses voix se mêlent, se superposent, se perdent parfois dans le bruit de fond de notre quotidien, elles composent une partition vivante, à la fois banale et unique, qui disparaît souvent sans laisser de trace.
-        </p>
-      </div>
-      <a href="https://ville-sonore.fr/" target="_blank" class="lien">En savoir plus >></a>
-
-
-
-      
-    </div>
-  </div>
-</section>
-
-
-
-<style>.art-section {
-  max-width: 1200px;
-  margin: 60px auto;
-  padding: 30px;
-  background: linear-gradient(to bottom, #ffffff, #f8f8f8);
-  border-radius: 1rem;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
-  font-family: 'Inter', sans-serif;
-  color: #111;
-}
-
-.art-header {
-  font-family: 'Playfair Display', serif;
-  margin-bottom: 40px;
-}
-
-.art-title {
-  margin: 0;
-  font-size: 1.8rem;
-}
-
-.art-content {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem; /* espacement contrôlé entre image et infos */
-}
-
-.art-image {
-  flex: 1 1 30px;
-}
-
-.art-image img {
-  width: 100%;
-  max-width: 300px;
-  height: auto;
-  border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.art-info {
-  flex: 1 1 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem; /* réduit l'espace entre détails et description */
-}
-
-.art-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px 24px;
-}
-
-.art-details h3 {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #555;
-  margin: 0 0 2px;
-}
-
-.art-details p {
-  font-size: 1rem;
-  color: #111;
-  margin: 0;
-}
-
-.art-description {
-  margin-top: 0; /* plus de marge excessive */
-}
-
-.separator {
-  border: none;
-  height: 1px;
-  background-color: #ccc;
-  margin: 6px 0 12px;
-}
-
-.art-description h3 {
-  font-size: 0.95rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 6px;
-  color: #333;
-}
-
-.art-description p {
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: #222;
-  margin: 0;
-}
-
-
-
-/* Responsive design */
-@media (max-width: 768px) {
-
-  .art-info {
-  flex: 1 1 auto;
-}
-
-  .art-content {
-    flex-direction: column;
-    align-items: center;
-    gap: 2rem;
-  }
-
-  .art-image img {
-    max-width: 100%;
-  }
-
-  .art-info {
-    width: 100%;
-    margin-top: 0; /* supprime la marge supplémentaire */
-  }
-
-  .art-details {
-    grid-template-columns: 1fr;
-  }
-}
-
-
-
-</style>
+  <!-- Main -->
+  <main role="main">
+    
 
 
 
@@ -1235,213 +215,489 @@
 
 
 
-<!--
-<section class="agenda">
-  <div class="agenda-column">
-    <h2>À venir</h2>
-    <ul>
-      <li>
-        <time datetime="2025">octobre 2025 à février 2026</time> — Résidence / mobilité artistique à Athènes <span class="note">(Grèce)</span>
-      </li>
-      <li>
-        <time datetime="2025">septembre 2025</time> — Lancement de l'édition de l'ouvrage <em>La Ville à Dire</em>
-      </li>
-    </ul>
-  </div>
+  <style>
 
-  <div class="agenda-column">
-    <h2>Événements passés</h2>
-    <ul>
-      <li>
-        <time datetime="2025">juin 2025</time> — Restitution finale, <span class="org">Comédie Française</span> — Jeune Bureau de la Comédie Française
-      </li>
-      <li>
-        <time datetime="2025">17 mai 2025</time> — Soirée de restitution du <em>« Parlement de l’Architecture »</em>, 21e Nuit européenne des musées, Centre Pompidou, Paris
-      </li>
-      <li>
-        <time datetime="2024">5 décembre 2024</time> — Finale du concours d'éloquence, <span class="org">École des Ingénieurs de la Ville de Paris</span>, Paris
-      </li>
-    </ul>
-  </div>
-</section>
--->
+    :root{
+      --tile:#fbfbfb;            /* couleur des carreaux */
+      --grout:#d7d7d7;           /* couleur des joints */
+      --letter:#123238;         /* couleur des lettres (sombre, vert-bleu) */
+      --max-font:28px;
+    }
+
+    /* wrapper de la section */
+    .concorde-section{
+      position:relative;
+      /*min-height:60vh;*/
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      /* léger motif de carrelage qui rappelle la station */
+      background-image:
+        linear-gradient(to right, var(--grout) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grout) 1px, transparent 1px);
+      background-size:80px 80px; /* taille des "carreaux" */
+    }
+
+    /* SVG qui contient la grille de lettres, occupe tout le conteneur */
+    .letters-svg{
+      position:absolute;inset:0;width:100%;height:100%;display:block;
+      pointer-events:none; /* la grille est décorative */
+    }
+
+    /* style par défaut des lettres */
+    .letters-svg text.letter{
+      fill:var(--letter);
+      fill-opacity:.9;
+      font-family:'Cormorant Garamond', 'Georgia', 'Times', serif;
+      font-weight:600;
+      font-size:var(--max-font);
+      dominant-baseline:middle;
+      text-anchor:middle;
+      transform-origin:center;
+      opacity:0.95;
+      /* animation douce où les lettres flottent subtilement */
+      animation:float 6s ease-in-out infinite;
+    }
+
+    @keyframes float{
+      0%{transform:translateY(0) rotate(0) scale(1); opacity:0.95}
+      25%{transform:translateY(-6px) rotate(-1.2deg) scale(1.02);}
+      50%{transform:translateY(0) rotate(0) scale(1); opacity:0.85}
+      75%{transform:translateY(6px) rotate(1.2deg) scale(.99);}
+      100%{transform:translateY(0) rotate(0) scale(1); opacity:0.95}
+    }
+
+    /* variations pour que la grille ne soit pas trop mécanique */
+    .letters-svg text.small{font-size:0.72em; fill-opacity:.75}
+    .letters-svg text.light{fill-opacity:.6}
+    .letters-svg text.ghost{fill-opacity:.35}
+
+    /* concorde-overlay contenant le texte principal */
+    .concorde-overlay{
+      position:relative; /* au-dessus du SVG */
+      z-index:3;
+      width:100%;
+      padding:48px 48px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      align-items:flex-start;
+      justify-content:center;
+      box-sizing:border-box;
+
+      border-radius: 8px;
+      backdrop-filter: blur(1px);
+      background:rgba(255,255,255,0.6);
+    }
+
+    .concorde-overlay .content{
+      width: 100%;
+      max-width: 1100px;
+      margin: auto;
+      position:relative;z-index:4; color: #0A1236;
+    }
+
+    .concorde-overlay .content h2 {
+      margin-left: 0;
+    }
+
+    .concorde-overlay h1{
+      font-size:clamp(1.6rem, 3.8vw, 3.2rem);letter-spacing:1px;
+        font-family: 'Playfair Display', serif;
+
+      color:#0A1236;
+    }
+    .concorde-overlay p{font-size:clamp(.95rem, 1.7vw, 1.1rem);opacity:.95;/*max-width:55ch*/}
+
+    /* petits ajustements responsive */
+    @media (max-width:640px){
+      :root{--max-font:20px}
+      .concorde-section{background-size:48px 48px}
+      .concorde-overlay{padding:28px}
+    
+ 
+    }
+
+  </style>
 
 
-<style>
-.agenda {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3rem;
-  padding: 3rem 1.5rem;
-  max-width: 1000px;
-  margin: 0 auto;
-  color: #111;
-  background-color: #fff;
-}
 
-.agenda-column {
-  flex: 1;
-  min-width: 280px;
-}
-
-.agenda-column h2 {
-  font-family: 'Playfair Display', serif;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 0.5rem;
-  letter-spacing: 0.5px;
-}
-
-.agenda-column ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.agenda-column li {
-  margin-bottom: 1.25rem;
-  line-height: 1.6;
-  font-size: 1rem;
-}
-
-.agenda-column time {
-  font-weight: bold;
-  color: #000;
-  margin-right: 0.5rem;
-}
-
-.event-title {
-  font-style: italic;
-}
-
-.org {
-  font-style: normal;
-  font-weight: 500;
-}
-
-.note {
-  color: #777;
-  font-size: 0.9rem;
-  margin-left: 0.3rem;
-}
   
-</style>
 
+<!-- SECTION 1 : texte via data-text -->
+<section class="concorde-section" data-text="Cette collection accueille des textes qui explorent les formes poétiques actuelles, qu’elles soient intimes, politiques, sociales ou expérimentales.">
+  <svg class="letters-svg" preserveAspectRatio="none" aria-hidden="true"></svg>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<section class="exploration" id="exploration">
-  <!--<div class="exploration-content">
-    <h2>Appel à l’exploration</h2>
-    <p class="subtitle">Parcourez un territoire d’images, de mots et de cartes sensibles.<br>
-    Un site, trois chemins. À croiser librement.</p>
-    <a href="#visite" class="exploration-button">Commencer la visite</a>
-  </div>-->
-
-  <div class="exploration-slider">
-    <div class="slider-track">
-      <img src="file:///C:/Users/gaelm/Desktop/portfolio/series/ce%20que%20la%20ville%20murmure/images/1.webp" alt="" />
-      <img src="file:///C:/Users/gaelm/Desktop/portfolio/series/ce%20que%20la%20ville%20murmure/images/2.webp" alt="" />
-      <img src="file:///C:/Users/gaelm/Desktop/portfolio/series/ce%20que%20la%20ville%20murmure/images/3.webp" alt="" />
-      <img src="file:///C:/Users/gaelm/Desktop/portfolio/series/ce%20que%20la%20ville%20murmure/images/4.webp" alt="" />
-      <img src="file:///C:/Users/gaelm/Desktop/portfolio/series/ce%20que%20la%20ville%20murmure/images/5.webp" alt="" />
-
-      <img src="file:///C:/Users/gaelm/Desktop/portfolio/series/ce%20que%20la%20ville%20murmure/images/1.webp" alt="" />
-      <img src="file:///C:/Users/gaelm/Desktop/portfolio/series/ce%20que%20la%20ville%20murmure/images/2.webp" alt="" />
-      <img src="file:///C:/Users/gaelm/Desktop/portfolio/series/ce%20que%20la%20ville%20murmure/images/3.webp" alt="" />
-      <img src="file:///C:/Users/gaelm/Desktop/portfolio/series/ce%20que%20la%20ville%20murmure/images/4.webp" alt="" />
-      <img src="file:///C:/Users/gaelm/Desktop/portfolio/series/ce%20que%20la%20ville%20murmure/images/5.webp" alt="" />
+  <div class="concorde-overlay" role="region" aria-label="Texte d'accroche">
+    <div class="backdrop" aria-hidden="true"></div>
+    <div class="content">
+      <h2 class="title">Gaël Maignan</h2>
+      <p>Formé en génie urbain à l’École des Ingénieurs de la Ville de Paris, j’essaie de développer une démarche transversale où se rencontrent l’écriture, les arts visuels et la création sonore.</p>
+      <!--<a href="#services" class="btn" role="button">En savoir plus</a>-->
     </div>
   </div>
 </section>
 
-<style>.exploration {
-  padding: 5rem 2rem;
-  background-color: var(--section-bg);
-  color: var(--text-color);
-  overflow: hidden;
-  text-align: center;
-}
 
-.exploration-content {
-  max-width: 800px;
-  margin: 0 auto 4rem;
-}
 
-.exploration h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 2rem;
-  margin-bottom: 1rem;
-}
 
-.exploration .subtitle {
-  font-size: 1.1rem;
-  font-weight: 300;
-  color: #444;
-  margin-bottom: 2rem;
-}
 
-.exploration-button {
-  font-size: 1rem;
-  text-decoration: none;
-  color: var(--accent-color);
-  border: 1px solid var(--accent-color);
-  padding: 0.6rem 1.2rem;
-  border-radius: 25px;
-  transition: var(--transition);
-}
 
-.exploration-button:hover {
-  background-color: var(--accent-color);
-  color: white;
-}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+/* Générateur multi-sections : chaque section garde son propre SVG / état.
+   Usage : ajouter data-text="..." sur la section, ou ajouter un élément .bg-text
+   à l'intérieur de la section contenant le texte.
+*/
+(() => {
+  // simple détection mobile (utilisé pour désactiver animations)
+  const isMobile = /Mobi|Android|iPhone|iPad|Tablet/i.test(navigator.userAgent);
 
-/* Slider auto */
-.exploration-slider {
-  overflow: hidden;
-  white-space: nowrap;
-  width: 100%;
-  mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
-}
+  // options par défaut (modifiable globalement ici)
+  const DEFAULTS = {
+    minCell: 44,
+    maxCell: 88,
+    maxJitter: 6
+  };
 
-.slider-track {
-  display: inline-block;
-  animation: slide-left 60s linear infinite;
-}
+  // nettoie et prépare la "pool" de lettres
+  function makePool(str) {
+    if (!str) str = '';
+    // conserver les lettres et les espaces simples, retirer ponctuation
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '') // enlever accents
+              .replace(/[^A-Z0-9 ]/gi, '') // autorise A-Z, chiffres et espace
+              .toUpperCase();
+  }
 
-.slider-track img {
-  height: 160px;
-  margin: 0 1rem;
-  filter: grayscale(100%);
-  opacity: 0.9;
-  border-radius: var(--radius);
-  object-fit: cover;
-}
+  // crée une instance pour une section donnée
+  function createSection(sectionEl) {
+    const svg = sectionEl.querySelector('svg.letters-svg');
+    if (!svg) return null;
 
-@keyframes slide-left {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
+    // récupérer texte : data-text > .bg-text > fallback
+    const dataText = sectionEl.getAttribute('data-text') || '';
+    const childTextEl = sectionEl.querySelector('.bg-text');
+    const poolRaw = dataText || (childTextEl ? childTextEl.textContent : '');
+    const pool = makePool(poolRaw) || 'CONCORDE';
+
+    let letterNodes = [];
+    let lastSize = { w: 0, h: 0 };
+    let paused = false;
+    let resizeTick = 0;
+
+    function clamp(v,a,b){ return Math.min(b, Math.max(a,v)); }
+
+    function build(force = false) {
+      if (paused && !force) return;
+
+      const w = Math.max(300, Math.floor(svg.clientWidth || sectionEl.clientWidth || window.innerWidth));
+      const h = Math.max(200, Math.floor(svg.clientHeight || sectionEl.clientHeight || window.innerHeight));
+
+      if (!force && letterNodes.length && lastSize.w === w && lastSize.h === h) return;
+      lastSize = { w, h };
+
+      const cellSize = Math.max(DEFAULTS.minCell, Math.min(DEFAULTS.maxCell, Math.floor(Math.min(w, h) / 12)));
+      const cols = Math.max(2, Math.ceil(w / cellSize));
+      const rows = Math.max(2, Math.ceil(h / cellSize));
+      const total = cols * rows;
+
+      // rebuild si besoin
+      if (letterNodes.length !== total) {
+        svg.replaceChildren();
+        letterNodes = [];
+        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+        svg.setAttribute('width', w);
+        svg.setAttribute('height', h);
+
+        const frag = document.createDocumentFragment();
+        let li = 0;
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const xBase = (cols === 1) ? w / 2 : (c * (w / (cols - 1)));
+            const yBase = (rows === 1) ? h / 2 : (r * (h / (rows - 1)));
+            const x = clamp(Math.round(xBase + (Math.random() * 2 - 1) * DEFAULTS.maxJitter), 0, w);
+            const y = clamp(Math.round(yBase + (Math.random() * 2 - 1) * DEFAULTS.maxJitter), 0, h);
+
+            const ch = pool[li % pool.length] || ' ';
+            li++;
+
+            const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            t.setAttribute('x', x);
+            t.setAttribute('y', y);
+
+            const classes = ['letter'];
+            if (Math.random() < 0.12) classes.push('small');
+            if (Math.random() < 0.25) classes.push('light');
+            if (Math.random() < 0.08) classes.push('ghost');
+            t.setAttribute('class', classes.join(' '));
+
+            t.textContent = ch;
+
+            if (!isMobile) {
+              t.style.animationDelay = `${(Math.random() * 6).toFixed(2)}s`;
+              t.style.animationDuration = `${(5 + Math.random() * 6).toFixed(2)}s`;
+            } else {
+              t.style.animation = 'none';
+            }
+
+            frag.appendChild(t);
+            letterNodes.push(t);
+          }
+        }
+        svg.appendChild(frag);
+      } else {
+        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+        svg.setAttribute('width', w);
+        svg.setAttribute('height', h);
+      }
+
+      if (!paused && !isMobile) setAnimationState('running');
+    }
+
+    function setAnimationState(state) {
+      for (const n of letterNodes) {
+        n.style.animationPlayState = state;
+      }
+    }
+
+    function scheduleRebuild() {
+      cancelAnimationFrame(resizeTick);
+      resizeTick = requestAnimationFrame(() => build());
+    }
+
+    // Expose pause/resume local à la section
+    sectionEl.pauseLetters = () => {
+      if (paused) return;
+      paused = true;
+      setAnimationState('paused');
+      cancelAnimationFrame(resizeTick);
+    };
+    sectionEl.resumeLetters = () => {
+      if (!paused) return;
+      paused = false;
+      build(true);
+    };
+
+    // événement resize lié à la fenêtre et au redimensionnement du conteneur
+    const ro = new ResizeObserver(() => {
+      // si section mise en pause, on laisse pending
+      if (paused) return;
+      scheduleRebuild();
+    });
+    ro.observe(sectionEl);
+
+    // build initial
+    build(true);
+
+    // si mobile : désactiver animations
+    if (isMobile) sectionEl.pauseLetters();
+
+    // retourne un "contrôleur" basique si besoin
+    return {
+      rebuild: () => build(true),
+      pause: sectionEl.pauseLetters,
+      resume: sectionEl.resumeLetters,
+      getPool: () => pool
+    };
+  }
+
+  // initialisation : trouver toutes les sections
+  const instances = [];
+  document.querySelectorAll('.concorde-section').forEach(sec => {
+    try {
+      const inst = createSection(sec);
+      if (inst) instances.push(inst);
+    } catch (e) {
+      // ne pas interrompre l'init complète si une section plante
+      console.error('Erreur init section concorde:', e);
+    }
+  });
+
+  // API globale minimale accessible pour debug/contrôle :
+  window.__ConcordeSections = {
+    instances,
+    rebuildAll() { instances.forEach(i => i.rebuild()); },
+    pauseAll() { instances.forEach(i => i.pause()); },
+    resumeAll() { instances.forEach(i => i.resume()); }
+  };
+})();
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style>
+
+  .article {
+    background-color: white;
+    max-width: 500px;
+  }
 </style>
 
 
 
+  <style>
+    
+    .cta-section {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 4rem 8%;
+      overflow: hidden;
+    }
+  .cta-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    /* on utilise la variable --bg définie sur la section */
+    background: var(--bg) center/cover no-repeat;
+
+    z-index: 1;
+  }
+
+    /* Contenu */
+    .cta-content {
+      position: relative;
+      z-index: 2;
+      width: 90%;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+
+    .cta-content h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .cta-content p {
+      /*margin-bottom: 2rem;*/
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .cta-section {
+        padding: 2rem;
+      }
+    }
+  </style>
+  <style>
+          .button {
+            color: white;
+            transition: background-color 0.3s ease;
+            background-color: #0A1236;
+          }
+          .button:hover {
+            background-color: rgba(116,157,163,1);
+          }
+        </style>
+
+
+<!-- Sections : pour chaque section mets la variable --bg en inline style -->
+<section class="cta-section" style="--bg: url('images/le-jour-des-13-heures.webp');" data-once="true">
+  <div class="cta-content">
+    <article class="relative p-4 rounded-lg shadow shadow-lg article">
+      <h3 class="font-semibold text-2xl">Le Jour des 13 heures — Film Documentaire</h3>
+      <p class="mt-2 pr-12">Athènes, 1ᵉʳ octobre 2025. La Grèce vit au ralenti : syndicats et travailleurs observent une grève générale contre la réforme autorisant des journées de travail de treize heures.<br>Ce film suit une journée de rassemblements et de voix qui résonnent place Syntagma.</p>
+      <a href="https://sous-les-titres.fr/films/le%20jour%20des%2013%20heures/le%20jour%20des%2013%20heures.html" target="_blank" class="absolute bottom-4 right-4 w-9 h-9 flex items-center justify-center rounded-full button"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg></a>
+    </article>
+  </div>
+</section>
+
+<section class="cta-section" style="--bg: url('images/ville sonore.webp');" data-once="true">
+  <div class="cta-content">
+    <article class="relative p-4 rounded-lg shadow shadow-lg article">
+      <h3 class="font-semibold text-2xl">La Ville Sonore : Enregistrer et cartographier la mémoire sonore des rues</h3>
+      <p class="mt-2 pr-12">La ville parle, mais rarement on l’écoute. Ses voix se mêlent, se superposent, se perdent parfois dans le bruit de fond de notre quotidien, elles composent une partition vivante, à la fois banale et unique, qui disparaît souvent sans laisser de trace.</p>
+      <a href="http://ville-sonore.fr/" target="_blank" class="absolute bottom-4 right-4 w-9 h-9 flex items-center justify-center rounded-full button"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg></a>
+    </article>
+  </div>
+</section>
+
+<section class="concorde-section" id="urbanisme">
+  <svg class="letters-svg" preserveAspectRatio="none" aria-hidden="true"></svg>
+
+  <div class="concorde-overlay" role="region" aria-label="Texte d'accroche">
+    <div class="backdrop" aria-hidden="true"></div>
+    <div class="content">
+      <h2 class="title">Urbanisme sensible</h2>
+      <p>Au-delà des plans et des normes, il s’agit d’appréhender les villes comme des lieux vécus, porteurs de mémoire, de récits, de tensions et d’émotions.</p>
+    </div>
+  </div>
+</section>
+
+
+<section class="cta-section" style="--bg: url('images/urbanivore.webp');" data-once="true">
+  <div class="cta-content">
+    <article class="relative p-4 rounded-lg shadow shadow-lg article">
+      <h3 class="font-semibold text-2xl">Urbanivore</h3>
+      <p class="mt-2 pr-12">Urbanivore est un projet visant à révéler le potentiel nourricier de nos métropoles en cartographiant les arbres comestibles accessibles dans l'espace public. Grâce aux données en Open Data et à une base de plus de 100 recettes associées à chaque essence, chacun peut réapprendre à cueillir, transformer, goûter… et mieux habiter sa ville.</p>
+      <a href="http://urbanivore.fr/" target="_blank" class="absolute bottom-4 right-4 w-9 h-9 flex items-center justify-center rounded-full button"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg></a>
+    </article>
+  </div>
+</section>
+
+<section class="cta-section" style="--bg: url('images/photographie.webp');" data-once="true">
+  <div class="cta-content">
+    <article class="relative p-4 rounded-lg shadow shadow-lg article">
+      <h3 class="font-semibold text-2xl">Photographie</h3>
+      <p class="mt-2 pr-12">Je photographie la ville comme on observe un corps en mouvement. Belleville, Paris, ou ailleurs, chaque rue, chaque fissure, chaque façade raconte une histoire. Mon regard se pose sur les interstices : là où le béton respire, où la lumière casse la routine.</p>
+      <a href="https://gael-maignan-photographe.fr/" target="_blank" class="absolute bottom-4 right-4 w-9 h-9 flex items-center justify-center rounded-full button"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg></a>
+    </article>
+  </div>
+</section>
+
+
+<section class="cta-section" style="--bg: url('images/ESDE.webp');" data-once="true">
+  <div class="cta-content">
+    <article class="relative p-4 rounded-lg shadow shadow-lg article">
+      <h3 class="font-semibold text-2xl">En Sortant De l'École — ESDE</h3>
+      <p class="mt-2 pr-12">
+L'Association En Sortant De l'École sensibilise les étudiants en ingénierie, urbanisme et architecture à concevoir des espaces réellement accessibles à toutes et tous, dès la formation.<br>
+<em>Sensibiliser les futurs concepteurs à l'accessibilité, par l'expérience vécue.</em></p>
+      <a href="https://asso-esde.fr/" target="_blank" class="absolute bottom-4 right-4 w-9 h-9 flex items-center justify-center rounded-full button"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg></a>
+    </article>
+  </div>
+</section>
+
+
+
+<section class="concorde-section" data-text="Urbanisme Sensible" id="ecriture">
+  <svg class="letters-svg" preserveAspectRatio="none" aria-hidden="true"></svg>
+
+  <div class="concorde-overlay" role="region" aria-label="Texte d'accroche">
+    <div class="backdrop" aria-hidden="true"></div>
+    <div class="content">
+      <h2 class="title">Écriture</h2>
+      <p>Poèmes, essais, récits sensibles. L’écriture comme acte de résistance douce, de mise en lumière, de tissage entre mémoire et imaginaire.</p>
+    </div>
+  </div>
+</section>
+
+
+<section class="cta-section" style="--bg: url('images/poete a grande vitesse.png');" data-once="true">
+  <div class="cta-content">
+    <article class="relative p-4 rounded-lg shadow shadow-lg article">
+      <h3 class="font-semibold text-2xl">Poète à grande vitesse</h3>
+      <p class="mt-2 pr-12">Entre prose poétique, souffle intime et paysages traversés, ce podcast est une invitation au voyage intérieur, au rythme des rails.</p>
+      <a href="https://open.spotify.com/show/0Udl5cVGssaXkZuAj9hXy7" target="_blank" class="absolute bottom-4 right-4 w-9 h-9 flex items-center justify-center rounded-full button"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg></a>
+    </article>
+  </div>
+</section>
 
 
 
@@ -1456,12 +712,154 @@
 
 
 
-</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <style>
+    :root{
+      --section-height-lab: 60vh;
+      --overlay-color-lab: rgba(111,150,156,0.8); /* teinte au-dessus de l'image pour lisibilité */
+      --text-color-lab: #F2F2F2;
+      --blur-radius: 4px;
+      --bg-image: url('images/lab.png'); /* remplace par ton image */
+    }
+
+    /* Section principale */
+    .hero-lab {
+      position: relative;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    /* Image de fond floutée via pseudo-élément */
+    .hero-lab::before{
+      content: "";
+      position: absolute;
+      inset: 0; /* top:0; right:0; bottom:0; left:0 */
+      background-image: var(--bg-image);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+
+      /* on agrandit légèrement pour compenser le recadrage dû au flou */
+      transform: scale(1.05);
+
+      /* le flou visuel */
+      filter: blur(var(--blur-radius));
+      z-index: 0;
+      will-change: transform, filter;
+    }
+
+    /* Superposition (overlay) sombre pour contraster le texte */
+    .hero-lab::after{
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--overlay-color-lab);
+      z-index: 1;
+    }
+
+    /* Contenu placé au-dessus */
+    .hero-lab__content{
+      color: var(--text-color-lab);
+      position: relative; /* au-dessus des pseudo-éléments */
+      z-index: 2;
+      padding: clamp(2rem, 3vw, 2.5rem) 0;
+
+      max-width: 1100px;
+      width: 90%;
+    }
+
+    .hero-lab__title{
+      font-size: clamp(1.4rem, 4vw, 2.8rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      text-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    }
+
+    .hero-lab__subtitle{
+      margin: 0;
+      font-size: clamp(.95rem, 2.2vw, 1.2rem);
+      margin-inline: auto;
+    }
+
+
+    /* Amélioration : pour les navigateurs qui ne supportent pas filter sur pseudo (très rare) */
+    @supports not (filter: blur(1px)) {
+      .hero-lab::before {
+        filter: none;
+        transform: none;
+        opacity: .65;
+      }
+    }
+
+    /* Responsive: réduire la hauteur sur très petits écrans */
+
+  </style>
+    <section class="hero-lab" aria-labelledby="hero-lab-title" id="contact">
+      <div class="hero-lab__content">
+        <h2 id="hero-lab-title" class="title">Contact</h2>
+        <p class="hero-lab__subtitle">Vous souhaitez en savoir plus sur mon travail ou souhaitez collaborer sur un projet créatif ? Je suis toujours ouvert·e aux échanges, commandes, expositions ou partenariats. N’hésitez pas à me contacter !</p>
+        <p class="hero-lab__subtitle"><br><strong>Vous pouvez me contacter à l'adresse : <a href="mailto:contact@gael-maignan.fr">contact@gael-maignan.fr</a></strong></p>
+        <!--<a href="#services" class="btn" role="button">Nous contacter</a>-->
+
+        <p>Réseaux : <a href="https://www.linkedin.com/in/gael-maignan/" target="_blank">Linkedin</a> | <a href="https://www.instagram.com/gael.maignan" target="_blank">Instagram</a> | <a href="https://www.artistescontemporains.org/artistes/51098/" target="_blank">Artistes Contemporains</a></p>
+      </div>
+    </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  </main>
+
+  <script src="js/index.js"></script>
+
+
 
 
   <footer>
-    © 2025 Gaël Maignan – Tous droits réservés
-  </footer>
+  <p>&copy; <span id="year"></span> — Tous droits réservés.</p>
+</footer>
+
+
 
 </body>
 </html>
+
+
+
