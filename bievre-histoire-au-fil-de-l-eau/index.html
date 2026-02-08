@@ -374,6 +374,41 @@ h3{font-size:16px;padding-bottom:5px;}
 
     <div id="map" aria-label="Carte — La Bièvre"></div>
 
+<!-- Affichage lat / lon de la souris -->
+<div id="mouse-coords" role="status" aria-live="polite" aria-atomic="true">
+  <span class="coord" id="mouse-lat">Lat: —</span>
+  <span class="coord" id="mouse-lng">Lon: —</span>
+</div>
+
+<style>
+    /* Affiche les coordonnées de la souris en bas à gauche */
+#mouse-coords{
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  z-index: 1250;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.95);
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+  font-size: 12px;
+  color: var(--strong-color);
+  font-family: 'Space Grotesk', sans-serif;
+  pointer-events: none; /* laisse la souris interagir avec la carte */
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* style monospace pour les valeurs numériques (plus lisible) */
+#mouse-coords .coord {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+  font-size: 12px;
+  color: #2c3e50;
+}</style>
+
+
+
     <div class="legend" aria-hidden="false">
         <h4>Légende</h4>
         <div class="legend-item"><div class="legend-marker" style="--legend-color: var(--marker-color)"></div>Archive</div>
@@ -467,6 +502,41 @@ h3{font-size:16px;padding-bottom:5px;}
    =========================== */
 const map = L.map('map', { center:[48.8434,2.3488], zoom:13, zoomControl:false, attributionControl:false });
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution:'© OpenStreetMap, © CartoDB', maxZoom:19 }).addTo(map);
+
+
+
+// Affichage de la lat et lon de la souris
+const coordBox = document.getElementById('mouse-coords');
+const latEl = document.getElementById('mouse-lat');
+const lngEl = document.getElementById('mouse-lng');
+
+const DECIMALS = 6;
+
+if (!coordBox || !latEl || !lngEl) {
+  console.warn('mouse-coords elements manquants — vérifie que le HTML contient #mouse-coords, #mouse-lat, #mouse-lng');
+} else {
+  // mise à jour lors du mouvement de la souris (Leaflet fournit latlng directement)
+  map.on('mousemove', function(e) {
+    if (!e || !e.latlng) return;
+    latEl.textContent = `Lat: ${Number(e.latlng.lat).toFixed(DECIMALS)}`;
+    lngEl.textContent = `Lon: ${Number(e.latlng.lng).toFixed(DECIMALS)}`;
+  });
+
+  // remettre les tirets quand on quitte la zone de la carte
+  map.on('mouseout', function() {
+    latEl.textContent = 'Lat: —';
+    lngEl.textContent = 'Lon: —';
+  });
+
+  // optionnel : mettre à jour aussi au clic/tap
+  map.on('click', function(e) {
+    if (!e || !e.latlng) return;
+    latEl.textContent = `Lat: ${Number(e.latlng.lat).toFixed(DECIMALS)}`;
+    lngEl.textContent = `Lon: ${Number(e.latlng.lng).toFixed(DECIMALS)}`;
+  });
+}
+
+
 
 
 
@@ -677,6 +747,7 @@ const pointsOfInterest = [
     historicalImage:"images/10.webp", currentImage:"360.html?src=images/10.jpg",
     legend:"Rue de Bièvre, Atget – 1900 (Musée Carnavalet)"
   },
+
   { name:"Viaduc de la Bièvre au passage des Peupliers.", lat:48.8217114, lng:2.3525474, year:"19e-20e siècle",
     description:`<p>Viaduc de la Bièvre au passage des Peupliers. Inconnu, Musée Carnavalet, Histoire de Paris</p>`,
     historicalImage:"images/11.webp", currentImage:"360.html?src=images/11.jpg",
@@ -690,7 +761,6 @@ const pointsOfInterest = [
     legend:"Source ?"
   },
 
-
   { name:"La Bièvre au chevet de la chapelle des Gobelins", lat:48.8349548, lng:2.3527276, year:"1823",
     description:`<p></p>`,
     historicalImage:"images/13.webp", currentImage:"360.html?src=images/13.jpg",
@@ -703,12 +773,30 @@ const pointsOfInterest = [
     legend:"La Bièvre, rue Croulebarbe (Usine de la veuve Lanier), Bahuet, Alfred-Louis, Musée Carnavalet, Histoire de Paris"
   },
 
-  { name:"Usine de la veuve Lanier", lat: 48.834768, lng: 2.349952
-, year:"1885",
-    description:`<p></p>`,
+  { name:"Passage Moret nº3, nº17 du plan parcellaire", lat: 48.834768, lng: 2.349952, year:"1910",
+    description:`<p>Passage Moret (Actuelle rue Emile Deslandres)</p>`,
     historicalImage:"images/15.webp", currentImage:"360.html?src=images/15.jpg",
-    legend:""
+    legend:"Passage Moret nº3, nº17 du plan parcellaire, 13ème arrondissement, Paris. Union Photographique Française, photographe"
+  },
+  { name:"La Bièvre au bief du Serrurier", lat: 48.8363517, lng: 2.3486524, year:"entre 1876 et 1900",
+    description:`<p>La Bièvre au bief du Serrurier (près de la rue Saint-Hippolyte), 13ème arrondissement</p>`,
+    historicalImage:"images/16.webp", currentImage:"360.html?src=images/16.jpg",
+    legend:"La Bièvre au bief du Serrurier (près de la rue Saint-Hippolyte), 13ème arrondissement. Casse, E. (Guernesey, 1909, Musée Carnavalet"
+  },
+
+  { name:"La Bièvre au bief de la rue de Valence", lat: 48.837396, lng: 2.349395, year:"1897",
+    description:`<p>Position à vérifier (emplacement à vérifier (tracer de la route ou tracer de la rue ?)).</p>`,
+    historicalImage:"images/17.webp", currentImage:"360.html?src=images/17.jpg",
+    legend:"La Bièvre au bief de la rue de Valence. Schaan, Paul (Saint-Pétersbourg, 1860 - Fontainebleau, 1924). Paris, musée Carnavalet."
+  },
+
+  { name:"", lat: 48.8382688, lng: 2.3508197, year:"1897",
+    description:`<p>La Bièvre au bief de Valence, 5ème arrondissement, Paris.</p>`,
+    historicalImage:"images/18.webp", currentImage:"360.html?src=images/18.jpg",
+    legend:"La Bièvre au bief de Valence, 5ème arrondissement, Paris. Emonts ou Emonds, Pierre"
   }
+
+
 
 
   
