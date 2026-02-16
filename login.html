@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Authentification</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 400px;
+    margin: 40px auto;
+  }
+
+  .hidden { display: none; }
+
+  input {
+    width: 100%;
+    padding: 8px;
+    margin: 6px 0;
+  }
+
+  button {
+    padding: 8px 12px;
+    margin-top: 8px;
+    cursor: pointer;
+  }
+
+  .error { color: red; margin-top: 8px; }
+
+  .card {
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 6px;
+  }
+
+  .loading {
+    text-align: center;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<div id="loading" class="loading">Vérification de la session...</div>
+
+<div id="loginCard" class="card hidden">
+  <h2>Connexion</h2>
+  <input type="email" id="username" value="contact@gael-maignan.fr" />
+  <input type="password" id="password" value="password" />
+  <button onclick="handleLogin()">Se connecter</button>
+  <div id="loginError" class="error"></div>
+</div>
+
+<div id="dashboardCard" class="card hidden">
+  <h2>Dashboard</h2>
+  <p><strong>Email :</strong> <span id="userEmail"></span></p>
+  <p><strong>Niveau :</strong> <span id="level"></span></p>
+  <p><strong>XP :</strong> <span id="xp"></span></p>
+  <p><strong>Activités :</strong> <span id="activities"></span></p>
+  <button onclick="logout()">Se déconnecter</button>
+</div>
+
+<script>
+const WORKER_URL = "https://api.gael-maignan.fr";
+
+function showLoading() {
+  document.getElementById("loading").classList.remove("hidden");
+  document.getElementById("loginCard").classList.add("hidden");
+  document.getElementById("dashboardCard").classList.add("hidden");
+}
+
+function showLogin() {
+  document.getElementById("loading").classList.add("hidden");
+  document.getElementById("dashboardCard").classList.add("hidden");
+  document.getElementById("loginCard").classList.remove("hidden");
+}
+
+function showDashboard() {
+  document.getElementById("loading").classList.add("hidden");
+  document.getElementById("loginCard").classList.add("hidden");
+  document.getElementById("dashboardCard").classList.remove("hidden");
+}
+
+async function checkSession() {
+  showLoading();
+
+  try {
+    const res = await fetch(`${WORKER_URL}/user-info`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({})
+    });
+
+    if (res.status === 401) {
+      showLogin();
+      return;
+    }
+
+    const info = await res.json();
+    populateDashboard(info);
+    showDashboard();
+
+  } catch (err) {
+    console.error("Erreur session:", err);
+    showLogin();
+  }
+}
+
+function populateDashboard(info) {
+  document.getElementById("userEmail").innerText = info.email ?? "N/A";
+  document.getElementById("level").innerText = info.level ?? "N/A";
+  document.getElementById("xp").innerText = info.xp ?? "N/A";
+  document.getElementById("activities").innerText =
+    (info.activities || []).join(", ");
+}
+
+async function handleLogin() {
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+  const errorDiv = document.getElementById("loginError");
+  errorDiv.innerText = "";
+
+  try {
+    const res = await fetch(`${WORKER_URL}/login`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      await checkSession(); // recharge proprement
+    } else {
+      errorDiv.innerText = "Identifiants incorrects.";
+    }
+
+  } catch (err) {
+    errorDiv.innerText = "Erreur serveur.";
+    console.error(err);
+  }
+}
+
+async function logout() {
+  await fetch(`${WORKER_URL}/logout`, {
+    method: "POST",
+    credentials: "include"
+  });
+
+  showLogin();
+}
+
+// 🔥 Vérification automatique au démarrage
+window.addEventListener("DOMContentLoaded", checkSession);
+</script>
+
+</body>
+</html>
