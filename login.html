@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -57,56 +58,6 @@
   <p><strong>XP :</strong> <span id="xp"></span></p>
   <p><strong>Activités :</strong> <span id="activities"></span></p>
   <button onclick="logout()">Se déconnecter</button>
-
-  <hr />
-<div>
-  <h3>Changer le mot de passe</h3>
-  <input type="password" id="currentPassword" placeholder="Mot de passe actuel" />
-  <input type="password" id="newPassword" placeholder="Nouveau mot de passe" />
-  <button onclick="handleChangePassword()">Changer le mot de passe</button>
-  <div id="changePwdMsg" class="error" style="color:green"></div>
-</div>
-
-<script>async function handleChangePassword() {
-  const currentPassword = document.getElementById("currentPassword").value;
-  const newPassword = document.getElementById("newPassword").value;
-  const msg = document.getElementById("changePwdMsg");
-  msg.style.color = "green";
-  msg.innerText = "";
-
-  if (!currentPassword || !newPassword) {
-    msg.style.color = "red";
-    msg.innerText = "Remplissez les deux champs.";
-    return;
-  }
-
-  try {
-    const res = await fetch(`${WORKER_URL}/change-password`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ currentPassword, newPassword })
-    });
-
-    const data = await res.json();
-    if (res.ok && data.success) {
-      msg.style.color = "green";
-      msg.innerText = "Mot de passe modifié — vous êtes déconnecté(e) de tous les appareils.";
-      // expire l'affichage local et affiche l'écran de login
-      setTimeout(() => {
-        showLogin();
-      }, 1200);
-    } else {
-      msg.style.color = "red";
-      msg.innerText = data.error || "Erreur lors du changement.";
-    }
-  } catch (e) {
-    msg.style.color = "red";
-    msg.innerText = "Erreur réseau.";
-    console.error(e);
-  }
-}
-</script>
 </div>
 
 <script>
@@ -207,3 +158,4 @@ window.addEventListener("DOMContentLoaded", checkSession);
 
 </body>
 </html>
+
