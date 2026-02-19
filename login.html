@@ -58,9 +58,8 @@
   <p><strong>XP :</strong> <span id="xp"></span></p>
   <p><strong>Activités :</strong> <span id="activities"></span></p>
   <button onclick="logout()">Se déconnecter</button>
-</div>
 
-<!-- inside dashboardCard -->
+  <!-- inside dashboardCard -->
 <hr />
 <h3>Changer le mot de passe</h3>
 <input id="currentPassword" type="password" placeholder="Mot de passe actuel" />
@@ -68,6 +67,8 @@
 <input id="confirmPassword" type="password" placeholder="Confirmer le nouveau mot de passe" />
 <button onclick="changePassword()">Changer le mot de passe</button>
 <div id="changePwdMsg" class="error" style="color:green;margin-top:8px"></div>
+
+</div>
 
 <script>
   async function changePassword() {
