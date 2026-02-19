@@ -1,139 +1,180 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8" />
-<title>Authentification</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Authentification — Gaël Maignan</title>
 <style>
+  :root{--card-bg:#fff;--muted:#666;--danger:#c00}
   body {
-    font-family: Arial, sans-serif;
-    max-width: 400px;
-    margin: 40px auto;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    max-width: 480px;
+    margin: 28px auto;
+    padding: 0 16px;
+    color: #222;
+    background: #f7f7fb;
   }
 
+  header { text-align:center; margin-bottom:18px; }
+  h1 { font-size:20px; margin:8px 0; }
+
   .hidden { display: none; }
+  .sr-only { position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; }
+
+  input, button {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 15px;
+  }
 
   input {
-    width: 100%;
-    padding: 8px;
-    margin: 6px 0;
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: var(--card-bg);
   }
 
   button {
-    padding: 8px 12px;
+    padding: 10px 12px;
     margin-top: 8px;
     cursor: pointer;
+    border-radius: 6px;
+    border: 0;
+    background: #0a6cff;
+    color: #fff;
+    font-weight: 600;
   }
 
-  .error { color: red; margin-top: 8px; }
+  button.secondary {
+    background: #efefef;
+    color: #111;
+  }
+
+  button.danger {
+    background: var(--danger);
+  }
+
+  .error { color: var(--danger); margin-top: 8px; }
+  .success { color: green; margin-top: 8px; }
 
   .card {
-    border: 1px solid #ddd;
-    padding: 20px;
-    border-radius: 6px;
+    border-radius: 8px;
+    background: var(--card-bg);
+    padding: 18px;
+    box-shadow: 0 4px 14px rgba(20,20,40,0.04);
+    border: 1px solid rgba(20,20,40,0.04);
+    margin-bottom: 12px;
   }
 
-  .loading {
-    text-align: center;
-    font-weight: bold;
-  }
+  .loading { text-align: center; font-weight: 600; color: var(--muted); }
+
+  .row { display:flex; gap:8px; }
+  .small { font-size: 13px; color: var(--muted); margin-top:6px; }
+
+  .actions { display:flex; gap:8px; margin-top:12px; }
+  .actions button { flex:1; }
+
+  .muted { color: var(--muted); font-size: 13px; }
+
 </style>
 </head>
 <body>
 
-<div id="loading" class="loading">Vérification de la session...</div>
+<header>
+  <h1>Espace utilisateur</h1>
+  <p class="muted">Connexion sécurisée — gaël-maignan.fr</p>
+</header>
 
-<div id="loginCard" class="card hidden">
+<div id="loading" class="loading card">Vérification de la session…</div>
+
+<!-- LOGIN -->
+<div id="loginCard" class="card hidden" aria-live="polite">
   <h2>Connexion</h2>
-  <input type="email" id="username" value="contact@gael-maignan.fr" />
-  <input type="password" id="password" value="password" />
-  <button onclick="handleLogin()">Se connecter</button>
-  <div id="loginError" class="error"></div>
+  <label class="sr-only" for="username">Adresse e-mail</label>
+  <input id="username" type="email" placeholder="email" value="contact@gael-maignan.fr" autocomplete="username" />
+  <label class="sr-only" for="password">Mot de passe</label>
+  <input id="password" type="password" placeholder="mot de passe" value="password" autocomplete="current-password" />
+  <div class="row">
+    <button id="loginBtn" onclick="handleLogin()">Se connecter</button>
+    <button class="secondary" onclick="fillDemo()">Démo</button>
+  </div>
+  <div id="loginError" class="error" role="status" aria-live="polite"></div>
+  <div class="small">Mot de passe oublié ? contacter l'administrateur.</div>
 </div>
 
-<div id="dashboardCard" class="card hidden">
+<!-- DASHBOARD -->
+<div id="dashboardCard" class="card hidden" aria-live="polite">
   <h2>Dashboard</h2>
   <p><strong>Email :</strong> <span id="userEmail"></span></p>
   <p><strong>Niveau :</strong> <span id="level"></span></p>
   <p><strong>XP :</strong> <span id="xp"></span></p>
   <p><strong>Activités :</strong> <span id="activities"></span></p>
-  <button onclick="logout()">Se déconnecter</button>
 
-  <!-- inside dashboardCard -->
-<hr />
-<h3>Changer le mot de passe</h3>
-<input id="currentPassword" type="password" placeholder="Mot de passe actuel" />
-<input id="newPassword" type="password" placeholder="Nouveau mot de passe" />
-<input id="confirmPassword" type="password" placeholder="Confirmer le nouveau mot de passe" />
-<button onclick="changePassword()">Changer le mot de passe</button>
-<div id="changePwdMsg" class="error" style="color:green;margin-top:8px"></div>
+  <div class="actions" style="margin-top:12px">
+    <button onclick="toggleChangePassword()">Changer le mot de passe</button>
+    <button class="secondary" onclick="logout()">Se déconnecter</button>
+  </div>
 
+  <div id="changePwdCard" class="card hidden" style="margin-top:12px;">
+    <h3>Changer le mot de passe</h3>
+    <label class="sr-only" for="currentPassword">Mot de passe actuel</label>
+    <input id="currentPassword" type="password" placeholder="Mot de passe actuel" autocomplete="current-password" />
+    <label class="sr-only" for="newPassword">Nouveau mot de passe</label>
+    <input id="newPassword" type="password" placeholder="Nouveau mot de passe (>= 8 caractères)" autocomplete="new-password" />
+    <label class="sr-only" for="confirmPassword">Confirmer nouveau mot de passe</label>
+    <input id="confirmPassword" type="password" placeholder="Confirmer le nouveau mot de passe" autocomplete="new-password" />
+    <div class="small">Après changement, toutes les sessions seront déconnectées et vous devrez vous reconnecter.</div>
+    <div class="row" style="margin-top:10px">
+      <button id="changePwdBtn" onclick="changePassword()">Valider</button>
+      <button class="secondary" onclick="toggleChangePassword()">Annuler</button>
+    </div>
+    <div id="changePwdError" class="error" role="status" aria-live="polite"></div>
+    <div id="changePwdSuccess" class="success" role="status" aria-live="polite"></div>
+  </div>
 </div>
-
-<script>
-  async function changePassword() {
-  const cur = document.getElementById("currentPassword").value;
-  const neu = document.getElementById("newPassword").value;
-  const conf = document.getElementById("confirmPassword").value;
-  const msg = document.getElementById("changePwdMsg");
-  msg.style.color = "green";
-  msg.innerText = "";
-
-  if (!cur || !neu) { msg.style.color = "red"; msg.innerText = "Tous les champs sont requis."; return; }
-  if (neu !== conf) { msg.style.color = "red"; msg.innerText = "Les mots de passe ne correspondent pas."; return; }
-
-  try {
-    const res = await fetch(`${WORKER_URL}/change-password`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ currentPassword: cur, newPassword: neu })
-    });
-
-    const data = await res.json();
-    if (res.ok && data.success) {
-      msg.style.color = "green";
-      msg.innerText = "Mot de passe changé. Vous avez été déconnecté(e) sur tous les appareils.";
-      // clear client-side UI and cookies by calling logout() to set expired cookies client-side too
-      await logout();
-      showLogin();
-    } else {
-      msg.style.color = "red";
-      msg.innerText = data.error || "Erreur lors du changement de mot de passe.";
-    }
-  } catch (e) {
-    msg.style.color = "red";
-    msg.innerText = "Erreur serveur.";
-    console.error(e);
-  }
-}
-
-</script>
 
 <script>
 const WORKER_URL = "https://api.gael-maignan.fr";
 
+function el(id){ return document.getElementById(id); }
+
 function showLoading() {
-  document.getElementById("loading").classList.remove("hidden");
-  document.getElementById("loginCard").classList.add("hidden");
-  document.getElementById("dashboardCard").classList.add("hidden");
+  el("loading").classList.remove("hidden");
+  el("loginCard").classList.add("hidden");
+  el("dashboardCard").classList.add("hidden");
 }
 
 function showLogin() {
-  document.getElementById("loading").classList.add("hidden");
-  document.getElementById("dashboardCard").classList.add("hidden");
-  document.getElementById("loginCard").classList.remove("hidden");
+  el("loading").classList.add("hidden");
+  el("dashboardCard").classList.add("hidden");
+  el("loginCard").classList.remove("hidden");
 }
 
 function showDashboard() {
-  document.getElementById("loading").classList.add("hidden");
-  document.getElementById("loginCard").classList.add("hidden");
-  document.getElementById("dashboardCard").classList.remove("hidden");
+  el("loading").classList.add("hidden");
+  el("loginCard").classList.add("hidden");
+  el("dashboardCard").classList.remove("hidden");
+}
+
+function toggleChangePassword() {
+  const card = el("changePwdCard");
+  card.classList.toggle("hidden");
+  // reset messages
+  el("changePwdError").innerText = "";
+  el("changePwdSuccess").innerText = "";
+  // clear inputs if hiding
+  if (card.classList.contains("hidden")) {
+    el("currentPassword").value = "";
+    el("newPassword").value = "";
+    el("confirmPassword").value = "";
+  } else {
+    el("currentPassword").focus();
+  }
 }
 
 async function checkSession() {
   showLoading();
-
   try {
     const res = await fetch(`${WORKER_URL}/user-info`, {
       method: "POST",
@@ -158,18 +199,24 @@ async function checkSession() {
 }
 
 function populateDashboard(info) {
-  document.getElementById("userEmail").innerText = info.email ?? "N/A";
-  document.getElementById("level").innerText = info.level ?? "N/A";
-  document.getElementById("xp").innerText = info.xp ?? "N/A";
-  document.getElementById("activities").innerText =
-    (info.activities || []).join(", ");
+  el("userEmail").innerText = info.username ?? info.email ?? "N/A";
+  el("level").innerText = info.level ?? "N/A";
+  el("xp").innerText = info.xp ?? "N/A";
+  el("activities").innerText = (info.activities || []).join(", ");
 }
 
 async function handleLogin() {
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-  const errorDiv = document.getElementById("loginError");
+  const username = el("username").value.trim();
+  const password = el("password").value;
+  const errorDiv = el("loginError");
   errorDiv.innerText = "";
+  el("loginBtn").disabled = true;
+
+  if (!username || !password) {
+    errorDiv.innerText = "Email et mot de passe requis.";
+    el("loginBtn").disabled = false;
+    return;
+  }
 
   try {
     const res = await fetch(`${WORKER_URL}/login`, {
@@ -179,33 +226,107 @@ async function handleLogin() {
       body: JSON.stringify({ username, password })
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(()=>({}));
 
     if (res.ok && data.success) {
-      await checkSession(); // recharge proprement
-    } else {
+      // recharge proprement la session et dashboard
+      await checkSession();
+    } else if (res.status === 401) {
       errorDiv.innerText = "Identifiants incorrects.";
+    } else {
+      errorDiv.innerText = data.error || "Erreur lors de la connexion.";
     }
 
   } catch (err) {
     errorDiv.innerText = "Erreur serveur.";
     console.error(err);
+  } finally {
+    el("loginBtn").disabled = false;
   }
 }
 
 async function logout() {
-  await fetch(`${WORKER_URL}/logout`, {
-    method: "POST",
-    credentials: "include"
-  });
-
+  try {
+    await fetch(`${WORKER_URL}/logout`, {
+      method: "POST",
+      credentials: "include"
+    });
+  } catch (e) { console.warn("logout error", e); }
   showLogin();
 }
 
-// 🔥 Vérification automatique au démarrage
+function fillDemo(){
+  el("username").value = "contact@gael-maignan.fr";
+  el("password").value = "password";
+}
+
+async function changePassword() {
+  const cur = el("currentPassword").value || "";
+  const nw = el("newPassword").value || "";
+  const conf = el("confirmPassword").value || "";
+  const err = el("changePwdError");
+  const ok = el("changePwdSuccess");
+  err.innerText = ""; ok.innerText = "";
+  el("changePwdBtn").disabled = true;
+
+  // basic front validation
+  if (!cur || !nw || !conf) {
+    err.innerText = "Tous les champs sont requis.";
+    el("changePwdBtn").disabled = false;
+    return;
+  }
+  if (nw.length < 8) {
+    err.innerText = "Le nouveau mot de passe doit contenir au moins 8 caractères.";
+    el("changePwdBtn").disabled = false;
+    return;
+  }
+  if (nw !== conf) {
+    err.innerText = "Les mots de passe ne correspondent pas.";
+    el("changePwdBtn").disabled = false;
+    return;
+  }
+  if (nw === cur) {
+    err.innerText = "Le nouveau mot de passe doit être différent de l'actuel.";
+    el("changePwdBtn").disabled = false;
+    return;
+  }
+
+  try {
+    const res = await fetch(`${WORKER_URL}/change-password`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ currentPassword: cur, newPassword: nw })
+    });
+
+    const data = await res.json().catch(()=>({}));
+
+    if (res.ok) {
+      ok.innerText = "Mot de passe changé — vous êtes déconnecté·e. Veuillez vous reconnecter.";
+      // after password change server revoked tokens and expired cookies: force logout view
+      setTimeout(()=>logout(), 1200);
+    } else {
+      if (res.status === 401) {
+        err.innerText = data.error || "Authentification requise / mot de passe actuel incorrect.";
+        // if not authenticated, redirect to login
+        if (!data || !data.success) {
+          setTimeout(()=>showLogin(), 900);
+        }
+      } else {
+        err.innerText = data.error || "Erreur lors du changement de mot de passe.";
+      }
+    }
+  } catch (e) {
+    err.innerText = "Erreur réseau / serveur.";
+    console.error("change-password error", e);
+  } finally {
+    el("changePwdBtn").disabled = false;
+  }
+}
+
+// Démarrage
 window.addEventListener("DOMContentLoaded", checkSession);
 </script>
 
 </body>
 </html>
-
