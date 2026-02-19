@@ -121,7 +121,7 @@
     <label class="sr-only" for="currentPassword">Mot de passe actuel</label>
     <input id="currentPassword" type="password" placeholder="Mot de passe actuel" autocomplete="current-password" />
     <label class="sr-only" for="newPassword">Nouveau mot de passe</label>
-    <input id="newPassword" type="password" placeholder="Nouveau mot de passe (>= 8 caractères)" autocomplete="new-password" />
+    <input id="newPassword" type="password" placeholder="Nouveau mot de passe" autocomplete="new-password" />
     <label class="sr-only" for="confirmPassword">Confirmer nouveau mot de passe</label>
     <input id="confirmPassword" type="password" placeholder="Confirmer le nouveau mot de passe" autocomplete="new-password" />
     <div class="small">Après changement, toutes les sessions seront déconnectées et vous devrez vous reconnecter.</div>
@@ -272,11 +272,6 @@ async function changePassword() {
   // basic front validation
   if (!cur || !nw || !conf) {
     err.innerText = "Tous les champs sont requis.";
-    el("changePwdBtn").disabled = false;
-    return;
-  }
-  if (nw.length < 8) {
-    err.innerText = "Le nouveau mot de passe doit contenir au moins 8 caractères.";
     el("changePwdBtn").disabled = false;
     return;
   }
