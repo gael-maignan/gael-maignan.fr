@@ -43,7 +43,46 @@ const WORKER_URL = "https://api.gael-maignan.fr";
 
 function el(id){ return document.getElementById(id); }
 
+/**
+ * Vérifie la session côté serveur en envoyant les cookies (credentials: "include").
+ * Si la session est valide, on stocke l'id si disponible et on redirige vers mes-annonces.html.
+ * En cas d'erreur réseau ou 401 on reste sur la page de login.
+ */
+async function checkAuthOnLoad(){
+  try {
+    // petit hint visuel optionnel (décommenter si souhaité)
+    // el("loginError").innerText = "Vérification de la session…";
 
+    const res = await fetch(`${WORKER_URL}/user-info`, {
+      method: "POST",
+      credentials: "include",
+      headers: {"Content-Type":"application/json"},
+      body: "{}"
+    });
+
+    if (res.ok) {
+      // session valide -> récupérer info (si renvoyée) et rediriger
+      const info = await res.json().catch(()=>null);
+      if (info && info.id) {
+        localStorage.setItem("meId", String(info.id));
+      }
+      // redirection vers la page de gestion des annonces
+      window.location.href = "mes-annonces.html";
+      return;
+    }
+
+    // 401 ou autre -> ne rien faire (utilisateur non connecté)
+    // if (res.status === 401) { /* pas connecté */ }
+  } catch (e) {
+    // échec réseau : on reste sur la page de login (on ne bloque pas l'UI)
+    console.warn("Échec vérification session:", e);
+  } finally {
+    // retirer le message de vérification si utilisé
+    // if (el("loginError").innerText === "Vérification de la session…") el("loginError").innerText = "";
+  }
+}
+
+/* Handler du bouton login (conserve le comportement existant) */
 el("loginBtn").addEventListener("click", async (e)=>{
   const username = el("username").value.trim();
   const password = el("password").value;
@@ -85,6 +124,11 @@ el("loginBtn").addEventListener("click", async (e)=>{
   } finally {
     el("loginBtn").disabled = false;
   }
+});
+
+/* Lancer la vérification au chargement de la page */
+document.addEventListener("DOMContentLoaded", () => {
+  checkAuthOnLoad();
 });
 </script>
 </body>
