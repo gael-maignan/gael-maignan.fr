@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mes annonces</title>
+
+<style>
+:root{--card-bg:#fff;--muted:#666;--danger:#c00}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;max-width:980px;margin:24px auto;padding:16px;background:#f7f7fb;color:#222}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+h1{font-size:18px;margin:0}
+.card{background:#fff;padding:16px;border-radius:8px;border:1px solid rgba(20,20,40,0.04);box-shadow:0 4px 14px rgba(20,20,40,0.04);margin-bottom:12px}
+input,textarea,button{width:100%;box-sizing:border-box;font-size:15px;padding:10px;border-radius:6px;border:1px solid #ddd}
+textarea{min-height:100px;resize:vertical}
+button{margin-top:8px;border:0;background:#0a6cff;color:#fff;font-weight:600;cursor:pointer}
+button.secondary{background:#efefef;color:#111}
+button.danger{background:var(--danger)}
+.annonces-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:12px}
+.annonce{padding:12px;border-radius:8px;background:#fff;border:1px solid #eee}
+.meta{font-size:13px;color:#666;margin-bottom:6px}
+.price{float:right;font-weight:700;color:#0a6cff}
+.controls{display:flex;gap:8px;margin-top:10px}
+.small{font-size:13px;color:#666}
+.error{color:#c00}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div>
+    <h1>Mes annonces</h1>
+    <div class="small">Gestion de vos annonces uniquement</div>
+  </div>
+  <div>
+    <button id="refreshBtn" class="secondary">Rafraîchir</button>
+    <button id="logoutBtn" class="secondary">Se déconnecter</button>
+  </div>
+</header>
+
+<section class="card">
+  <strong id="userEmail">—</strong>
+  <div class="small" id="userMeta"></div>
+</section>
+
+<section class="card">
+  <h2>Créer une annonce</h2>
+  <input id="annTitle" placeholder="Titre" maxlength="150">
+  <textarea id="annDesc" placeholder="Description"></textarea>
+  <input id="annPrice" placeholder="Prix (ex: 35.00)">
+  <input id="annLocation" placeholder="Localisation">
+  <button id="createBtn">Publier</button>
+  <div id="createError" class="error"></div>
+</section>
+
+<section class="card">
+  <h2>Vos annonces</h2>
+  <div id="annoncesMsg" class="small">Chargement…</div>
+  <div id="annoncesContainer" class="annonces-grid"></div>
+</section>
+
+<script>
+const WORKER_URL = "https://api.gael-maignan.fr";
+
+function el(id){ return document.getElementById(id); }
+function cents(str){ const n = Number(String(str||"").replace(",", ".")); return isNaN(n)?null:Math.round(n*100); }
+function price(c){ return c!=null?(c/100).toFixed(2)+" €":"—"; }
+
+/* SESSION */
+async function checkSession(){
+  const res = await fetch(`${WORKER_URL}/user-info`,{
+    method:"POST",
+    credentials:"include",
+    headers:{"Content-Type":"application/json"},
+    body:"{}"
+  });
+
+  if(res.status===401){
+    location.href="/login.html";
+    return;
+  }
+
+  const info = await res.json();
+  window.__meId = String(info.id);
+  localStorage.setItem("meId", window.__meId);
+
+  el("userEmail").innerText = info.username ?? info.email;
+  el("userMeta").innerText = `niveau ${info.level ?? "-"} • xp ${info.xp ?? "-"}`;
+}
+
+/* LOAD UNIQUEMENT MES ANNONCES */
+async function loadAnnonces(){
+  const container = el("annoncesContainer");
+  const msg = el("annoncesMsg");
+  container.innerHTML="";
+  msg.innerText="Chargement…";
+
+  const myId = window.__meId || localStorage.getItem("meId");
+  if(!myId){ msg.innerText="Utilisateur inconnu."; return; }
+
+  const res = await fetch(`${WORKER_URL}/annonces?limit=200`,{
+    credentials:"include"
+  });
+
+  if(!res.ok){ msg.innerText="Erreur chargement."; return; }
+
+  const data = await res.json();
+  let annonces = Array.isArray(data)?data:(data.annonces||data.results||[]);
+
+  // 🔐 FILTRAGE STRICT
+  annonces = annonces.filter(a=>String(a.user_id)===String(myId));
+
+  if(!annonces.length){
+    msg.innerText="Vous n'avez aucune annonce.";
+    return;
+  }
+
+  msg.innerText=`${annonces.length} annonce(s)`;
+
+  annonces.forEach(a=>{
+    const card=document.createElement("article");
+    card.className="annonce";
+
+    card.innerHTML=`
+      <strong>${escape(a.title)}</strong>
+      <span class="price">${price(a.price)}</span>
+      <div class="meta">${a.location??""}</div>
+      <p>${escape(a.description??"")}</p>
+    `;
+
+    const controls=document.createElement("div");
+    controls.className="controls";
+
+    const edit=document.createElement("button");
+    edit.className="secondary";
+    edit.innerText="Modifier";
+    edit.onclick=()=>editAnnonce(a);
+
+    const del=document.createElement("button");
+    del.className="danger";
+    del.innerText="Supprimer";
+    del.onclick=()=>deleteAnnonce(a.id);
+
+    controls.append(edit,del);
+    card.appendChild(controls);
+    container.prepend(card);
+  });
+}
+
+/* CREATE */
+el("createBtn").onclick=async()=>{
+  const payload={
+    title:el("annTitle").value.trim(),
+    description:el("annDesc").value.trim(),
+    price:cents(el("annPrice").value),
+    location:el("annLocation").value.trim()
+  };
+
+  if(!payload.title){ el("createError").innerText="Titre requis."; return; }
+
+  const res=await fetch(`${WORKER_URL}/annonces`,{
+    method:"POST",
+    credentials:"include",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(payload)
+  });
+
+  if(res.ok){
+    el("annTitle").value="";
+    el("annDesc").value="";
+    el("annPrice").value="";
+    el("annLocation").value="";
+    loadAnnonces();
+  }else{
+    el("createError").innerText="Erreur création.";
+  }
+};
+
+/* DELETE */
+async function deleteAnnonce(id){
+  if(!confirm("Confirmer suppression ?")) return;
+  const res=await fetch(`${WORKER_URL}/annonces/${id}`,{
+    method:"DELETE",
+    credentials:"include"
+  });
+  if(res.ok) loadAnnonces();
+}
+
+/* EDIT (simple) */
+async function editAnnonce(a){
+  const t=prompt("Titre",a.title);
+  if(t===null) return;
+  await fetch(`${WORKER_URL}/annonces/${a.id}`,{
+    method:"PATCH",
+    credentials:"include",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({title:t})
+  });
+  loadAnnonces();
+}
+
+el("refreshBtn").onclick=loadAnnonces;
+el("logoutBtn").onclick=async()=>{
+  await fetch(`${WORKER_URL}/logout`,{method:"POST",credentials:"include"});
+  localStorage.removeItem("meId");
+  location.href="/login.html";
+};
+
+function escape(s){return String(s||"").replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+/* INIT */
+(async()=>{
+  await checkSession();
+  await loadAnnonces();
+})();
+</script>
+
+</body>
+</html>
