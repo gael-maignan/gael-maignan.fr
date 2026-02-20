@@ -94,6 +94,7 @@ async function checkSession(){
     }
 
     const info = await res.json();
+    console.log("USER INFO:", info);
     window.__meId = String(info.id);
     localStorage.setItem("meId", window.__meId);
 
