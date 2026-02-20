@@ -31,12 +31,11 @@
 
     <div class="row" style="margin-top:8px">
       <button id="loginBtn">Se connecter</button>
-      <button id="demoBtn" class="secondary">Démo</button>
     </div>
 
     <div id="loginError" class="error" role="status" aria-live="polite"></div>
 
-    <p class="muted" style="margin-top:12px">Si tu n'as pas de compte, contacte l'administrateur.</p>
+    <a class="muted" style="margin-top:12px" href="register.html">Créer un compte</a>
   </main>
 
 <script>
@@ -44,10 +43,6 @@ const WORKER_URL = "https://api.gael-maignan.fr";
 
 function el(id){ return document.getElementById(id); }
 
-el("demoBtn").addEventListener("click", (e)=>{
-  el("username").value = "contact@gael-maignan.fr";
-  el("password").value = "password";
-});
 
 el("loginBtn").addEventListener("click", async (e)=>{
   const username = el("username").value.trim();
@@ -78,7 +73,7 @@ el("loginBtn").addEventListener("click", async (e)=>{
         localStorage.setItem("meId", String(data.user.id));
       }
       // redirect to annonces page
-      window.location.href = "annonces.html";
+      window.location.href = "mes-annonces.html";
     } else if (res.status === 401) {
       err.innerText = "Identifiants incorrects.";
     } else {
