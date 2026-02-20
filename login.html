@@ -496,6 +496,7 @@ async function createAnnonce() {
 }
 
 /* load public annonces */
+// remplace entièrement la fonction loadAnnonces() par ceci
 async function loadAnnonces() {
   const container = el("annoncesContainer");
   const msg = el("annoncesMsg");
@@ -508,16 +509,43 @@ async function loadAnnonces() {
     });
     if (!res.ok) {
       msg.innerText = "Impossible de charger les annonces.";
+      console.warn("loadAnnonces: non-ok response", res.status);
       return;
     }
-    const data = await res.json();
-    const annonces = data.annonces || [];
-    if (annonces.length === 0) {
+
+    const data = await res.json().catch(()=>null);
+    console.debug("loadAnnonces - raw response:", data);
+
+    // Normalise plusieurs formats possibles renvoyés par l'API
+    let annonces = [];
+    if (!data) {
+      annonces = [];
+    } else if (Array.isArray(data.annonces)) {
+      annonces = data.annonces;
+    } else if (data.annonces && Array.isArray(data.annonces.results)) {
+      // Cloudflare D1 .all() -> { results: [...] }
+      annonces = data.annonces.results;
+    } else if (Array.isArray(data)) {
+      // si l'API renvoie directement un tableau
+      annonces = data;
+    } else if (Array.isArray(data.results)) {
+      // parfois la réponse globale contient results
+      annonces = data.results;
+    } else {
+      // fallback : essaie d'extraire la première propriété tableau utile
+      for (const k of Object.keys(data)) {
+        if (Array.isArray(data[k])) { annonces = data[k]; break; }
+      }
+    }
+
+    if (!annonces || annonces.length === 0) {
       msg.innerText = "Aucune annonce publique pour le moment.";
       return;
     }
+
     msg.innerText = `Affichage de ${annonces.length} annonce(s).`;
-    // render
+    // render — on vide avant d'afficher (dé-dup si nécessaire)
+    container.innerHTML = "";
     annonces.forEach(a => appendAnnonceToDOM(a, false));
   } catch (e) {
     console.error("loadAnnonces error", e);
