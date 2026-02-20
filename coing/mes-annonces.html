@@ -34,7 +34,6 @@ button.danger{background:var(--danger)}
     <div class="small">Gestion de vos annonces uniquement</div>
   </div>
   <div>
-    <button id="refreshBtn" class="secondary">Rafraîchir</button>
     <button id="logoutBtn" class="secondary">Se déconnecter</button>
   </div>
 </header>
@@ -140,6 +139,8 @@ async function loadAnnonces(){
 
   // Normaliser les différentes formes possibles de la réponse API
   let annonces = [];
+
+  console.log(data);
 
   if (Array.isArray(data)) {
     annonces = data;
@@ -296,7 +297,6 @@ async function editAnnonce(a){
   }
 }
 
-el("refreshBtn").onclick=loadAnnonces;
 el("logoutBtn").onclick=async()=>{
   await fetch(`${WORKER_URL}/logout`,{method:"POST",credentials:"include"});
   localStorage.removeItem("meId");
