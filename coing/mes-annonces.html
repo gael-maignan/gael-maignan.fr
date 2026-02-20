@@ -105,8 +105,22 @@ async function loadAnnonces(){
 
   if(!res.ok){ msg.innerText="Erreur chargement."; return; }
 
-  const data = await res.json();
-  let annonces = Array.isArray(data)?data:(data.annonces||data.results||[]);
+const data = await res.json();
+
+let annonces = [];
+
+if (Array.isArray(data)) {
+  annonces = data;
+} else if (Array.isArray(data.annonces)) {
+  annonces = data.annonces;
+} else if (Array.isArray(data.results)) {
+  annonces = data.results;
+} else {
+  console.error("Réponse API invalide :", data);
+  annonces = [];
+}
+
+
 
   // 🔐 FILTRAGE STRICT
   annonces = annonces.filter(a=>String(a.user_id)===String(myId));
