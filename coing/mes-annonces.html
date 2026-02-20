@@ -77,7 +77,7 @@ async function checkSession(){
   });
 
   if(res.status===401){
-    location.href="/login.html";
+    location.href="login.html";
     return;
   }
 
@@ -204,7 +204,7 @@ el("refreshBtn").onclick=loadAnnonces;
 el("logoutBtn").onclick=async()=>{
   await fetch(`${WORKER_URL}/logout`,{method:"POST",credentials:"include"});
   localStorage.removeItem("meId");
-  location.href="/login.html";
+  location.href="login.html";
 };
 
 function escape(s){return String(s||"").replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
