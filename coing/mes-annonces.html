@@ -109,11 +109,14 @@ async function checkSession(){
 async function loadAnnonces(){
   const container = el("annoncesContainer");
   const msg = el("annoncesMsg");
-  container.innerHTML="";
-  msg.innerText="Chargement…";
+  container.innerHTML = "";
+  msg.innerText = "Chargement…";
 
   const myId = window.__meId || localStorage.getItem("meId");
-  if(!myId){ msg.innerText="Utilisateur inconnu."; return; }
+  if(!myId){
+    msg.innerText = "Utilisateur inconnu.";
+    return;
+  }
 
   let res;
   try{
@@ -126,7 +129,10 @@ async function loadAnnonces(){
     return;
   }
 
-  if(!res.ok){ msg.innerText="Erreur chargement."; return; }
+  if(!res.ok){
+    msg.innerText="Erreur chargement.";
+    return;
+  }
 
   let data;
   try{
@@ -137,31 +143,19 @@ async function loadAnnonces(){
     return;
   }
 
-  // Normaliser les différentes formes possibles de la réponse API
+  console.log("DATA API:", data);
+
+  // ✅ Structure réelle : data.annonces.results
   let annonces = [];
 
-  console.log(data);
-
-  if (Array.isArray(data)) {
-    annonces = data;
-  } else if (data && Array.isArray(data.results)) {
-    annonces = data.results;
-  } else if (data && data.annonces) {
-    if (Array.isArray(data.annonces)) {
-      annonces = data.annonces;
-    } else if (Array.isArray(data.annonces.results)) {
-      annonces = data.annonces.results;
-    } else if (Array.isArray(data.annonces.data)) {
-      annonces = data.annonces.data;
-    }
-  } else if (data && Array.isArray(data.data)) {
-    annonces = data.data;
+  if(data?.annonces?.success && Array.isArray(data.annonces.results)){
+    annonces = data.annonces.results;
   } else {
-    console.error("Réponse API inattendue :", data);
-    annonces = [];
+    msg.innerText="Structure API inattendue.";
+    return;
   }
 
-  // Filtrage strict par user_id
+  // ✅ Filtrage strict par user_id
   annonces = annonces.filter(a => String(a.user_id) === String(myId));
 
   if(!annonces.length){
@@ -171,58 +165,43 @@ async function loadAnnonces(){
 
   msg.innerText=`${annonces.length} annonce(s)`;
 
-  // tri optionnel: par created_at descendant si disponible
-  annonces.sort((a,b)=>{
-    const ta = Number(a.created_at) || 0;
-    const tb = Number(b.created_at) || 0;
-    return tb - ta;
-  });
+  // ✅ Tri par date décroissante
+  annonces.sort((a,b)=> Number(b.created_at||0) - Number(a.created_at||0));
 
   annonces.forEach(a=>{
-    const card=document.createElement("article");
-    card.className="annonce";
+    const card = document.createElement("article");
+    card.className = "annonce";
 
-    // normaliser prix (l'API peut renvoyer null, number en cents, string en euros, etc.)
-    let priceCents = null;
-    if (a.price != null) {
-      if (typeof a.price === 'number') {
-        // on suppose que l'API renvoie en centimes (ou en euros si <10000? difficile à deviner)
-        // si le nombre semble petit (<1000) on le traite comme euros -> convertir en centimes
-        priceCents = a.price > 10000 ? a.price : (a.price < 1000 ? Math.round(a.price*100) : a.price);
-      } else if (typeof a.price === 'string' && a.price.trim() !== '') {
-        const maybe = Number(a.price.replace(",", "."));
-        if (!isNaN(maybe)) priceCents = Math.round(maybe*100);
-      }
-    }
-
-    const locationText = a.location ?? "";
     const created = tsToDate(a.created_at);
 
-    card.innerHTML=`
+    card.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between">
-        <strong>${escapeHtml(a.title||"—")}</strong>
-        <span class="price">${price(priceCents)}</span>
+        <strong>${escapeHtml(a.title || "—")}</strong>
+        <span class="price">${price(a.price)}</span>
       </div>
-      <div class="meta">${escapeHtml(locationText)} ${created?(" • "+escapeHtml(created)):""}</div>
-      <p>${escapeHtml(a.description||"")}</p>
+      <div class="meta">
+        ${escapeHtml(a.location || "")}
+        ${created ? " • " + escapeHtml(created) : ""}
+      </div>
+      <p>${escapeHtml(a.description || "")}</p>
     `;
 
-    const controls=document.createElement("div");
-    controls.className="controls";
+    const controls = document.createElement("div");
+    controls.className = "controls";
 
-    const edit=document.createElement("button");
-    edit.className="secondary";
-    edit.innerText="Modifier";
-    edit.onclick=()=>editAnnonce(a);
+    const edit = document.createElement("button");
+    edit.className = "secondary";
+    edit.innerText = "Modifier";
+    edit.onclick = () => editAnnonce(a);
 
-    const del=document.createElement("button");
-    del.className="danger";
-    del.innerText="Supprimer";
-    del.onclick=()=>deleteAnnonce(a.id);
+    const del = document.createElement("button");
+    del.className = "danger";
+    del.innerText = "Supprimer";
+    del.onclick = () => deleteAnnonce(a.id);
 
-    controls.append(edit,del);
+    controls.append(edit, del);
     card.appendChild(controls);
-    container.appendChild(card); // append pour conserver l'ordre trié ci-dessus
+    container.appendChild(card);
   });
 }
 
