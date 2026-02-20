@@ -67,26 +67,43 @@ function el(id){ return document.getElementById(id); }
 function cents(str){ const n = Number(String(str||"").replace(",", ".")); return isNaN(n)?null:Math.round(n*100); }
 function price(c){ return c!=null?(c/100).toFixed(2)+" €":"—"; }
 
+/* helper: safe escape pour HTML */
+function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+/* helper: convert timestamp (s or ms) en chaîne locale FR */
+function tsToDate(ts){
+  if(ts==null) return "";
+  const n = Number(ts);
+  if(isNaN(n)) return String(ts);
+  const ms = n > 1e12 ? n : n * 1000; // détecte secondes vs ms
+  return new Date(ms).toLocaleString('fr-FR');
+}
+
 /* SESSION */
 async function checkSession(){
-  const res = await fetch(`${WORKER_URL}/user-info`,{
-    method:"POST",
-    credentials:"include",
-    headers:{"Content-Type":"application/json"},
-    body:"{}"
-  });
+  try{
+    const res = await fetch(`${WORKER_URL}/user-info`,{
+      method:"POST",
+      credentials:"include",
+      headers:{"Content-Type":"application/json"},
+      body:"{}"
+    });
 
-  if(res.status===401){
-    location.href="login.html";
-    return;
+    if(res.status===401){
+      location.href="login.html";
+      return;
+    }
+
+    const info = await res.json();
+    window.__meId = String(info.id);
+    localStorage.setItem("meId", window.__meId);
+
+    el("userEmail").innerText = info.username ?? info.email ?? "Utilisateur";
+    el("userMeta").innerText = `niveau ${info.level ?? "-"} • xp ${info.xp ?? "-"}`;
+  }catch(err){
+    console.error("Erreur session:", err);
+    el("userEmail").innerText="Erreur session";
   }
-
-  const info = await res.json();
-  window.__meId = String(info.id);
-  localStorage.setItem("meId", window.__meId);
-
-  el("userEmail").innerText = info.username ?? info.email;
-  el("userMeta").innerText = `niveau ${info.level ?? "-"} • xp ${info.xp ?? "-"}`;
 }
 
 /* LOAD UNIQUEMENT MES ANNONCES */
@@ -99,31 +116,52 @@ async function loadAnnonces(){
   const myId = window.__meId || localStorage.getItem("meId");
   if(!myId){ msg.innerText="Utilisateur inconnu."; return; }
 
-  const res = await fetch(`${WORKER_URL}/annonces?limit=200`,{
-    credentials:"include"
-  });
+  let res;
+  try{
+    res = await fetch(`${WORKER_URL}/annonces?limit=200`,{
+      credentials:"include"
+    });
+  }catch(err){
+    console.error(err);
+    msg.innerText="Erreur réseau.";
+    return;
+  }
 
   if(!res.ok){ msg.innerText="Erreur chargement."; return; }
 
-const data = await res.json();
+  let data;
+  try{
+    data = await res.json();
+  }catch(err){
+    console.error("JSON parse error:", err);
+    msg.innerText="Réponse API invalide.";
+    return;
+  }
 
-let annonces = [];
+  // Normaliser les différentes formes possibles de la réponse API
+  let annonces = [];
 
-if (Array.isArray(data)) {
-  annonces = data;
-} else if (Array.isArray(data.annonces)) {
-  annonces = data.annonces;
-} else if (Array.isArray(data.results)) {
-  annonces = data.results;
-} else {
-  console.error("Réponse API invalide :", data);
-  annonces = [];
-}
+  if (Array.isArray(data)) {
+    annonces = data;
+  } else if (data && Array.isArray(data.results)) {
+    annonces = data.results;
+  } else if (data && data.annonces) {
+    if (Array.isArray(data.annonces)) {
+      annonces = data.annonces;
+    } else if (Array.isArray(data.annonces.results)) {
+      annonces = data.annonces.results;
+    } else if (Array.isArray(data.annonces.data)) {
+      annonces = data.annonces.data;
+    }
+  } else if (data && Array.isArray(data.data)) {
+    annonces = data.data;
+  } else {
+    console.error("Réponse API inattendue :", data);
+    annonces = [];
+  }
 
-
-
-  // 🔐 FILTRAGE STRICT
-  annonces = annonces.filter(a=>String(a.user_id)===String(myId));
+  // Filtrage strict par user_id
+  annonces = annonces.filter(a => String(a.user_id) === String(myId));
 
   if(!annonces.length){
     msg.innerText="Vous n'avez aucune annonce.";
@@ -132,15 +170,40 @@ if (Array.isArray(data)) {
 
   msg.innerText=`${annonces.length} annonce(s)`;
 
+  // tri optionnel: par created_at descendant si disponible
+  annonces.sort((a,b)=>{
+    const ta = Number(a.created_at) || 0;
+    const tb = Number(b.created_at) || 0;
+    return tb - ta;
+  });
+
   annonces.forEach(a=>{
     const card=document.createElement("article");
     card.className="annonce";
 
+    // normaliser prix (l'API peut renvoyer null, number en cents, string en euros, etc.)
+    let priceCents = null;
+    if (a.price != null) {
+      if (typeof a.price === 'number') {
+        // on suppose que l'API renvoie en centimes (ou en euros si <10000? difficile à deviner)
+        // si le nombre semble petit (<1000) on le traite comme euros -> convertir en centimes
+        priceCents = a.price > 10000 ? a.price : (a.price < 1000 ? Math.round(a.price*100) : a.price);
+      } else if (typeof a.price === 'string' && a.price.trim() !== '') {
+        const maybe = Number(a.price.replace(",", "."));
+        if (!isNaN(maybe)) priceCents = Math.round(maybe*100);
+      }
+    }
+
+    const locationText = a.location ?? "";
+    const created = tsToDate(a.created_at);
+
     card.innerHTML=`
-      <strong>${escape(a.title)}</strong>
-      <span class="price">${price(a.price)}</span>
-      <div class="meta">${a.location??""}</div>
-      <p>${escape(a.description??"")}</p>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <strong>${escapeHtml(a.title||"—")}</strong>
+        <span class="price">${price(priceCents)}</span>
+      </div>
+      <div class="meta">${escapeHtml(locationText)} ${created?(" • "+escapeHtml(created)):""}</div>
+      <p>${escapeHtml(a.description||"")}</p>
     `;
 
     const controls=document.createElement("div");
@@ -158,12 +221,14 @@ if (Array.isArray(data)) {
 
     controls.append(edit,del);
     card.appendChild(controls);
-    container.prepend(card);
+    container.appendChild(card); // append pour conserver l'ordre trié ci-dessus
   });
 }
 
 /* CREATE */
 el("createBtn").onclick=async()=>{
+  el("createError").innerText="";
+
   const payload={
     title:el("annTitle").value.trim(),
     description:el("annDesc").value.trim(),
@@ -173,45 +238,62 @@ el("createBtn").onclick=async()=>{
 
   if(!payload.title){ el("createError").innerText="Titre requis."; return; }
 
-  const res=await fetch(`${WORKER_URL}/annonces`,{
-    method:"POST",
-    credentials:"include",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(payload)
-  });
+  try{
+    const res=await fetch(`${WORKER_URL}/annonces`,{
+      method:"POST",
+      credentials:"include",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
 
-  if(res.ok){
-    el("annTitle").value="";
-    el("annDesc").value="";
-    el("annPrice").value="";
-    el("annLocation").value="";
-    loadAnnonces();
-  }else{
-    el("createError").innerText="Erreur création.";
+    if(res.ok){
+      el("annTitle").value="";
+      el("annDesc").value="";
+      el("annPrice").value="";
+      el("annLocation").value="";
+      await loadAnnonces();
+    }else{
+      const errText = await res.text().catch(()=>"");
+      el("createError").innerText="Erreur création." + (errText?(" "+errText):"");
+    }
+  }catch(err){
+    console.error("Erreur création:", err);
+    el("createError").innerText="Erreur réseau lors de la création.";
   }
 };
 
 /* DELETE */
 async function deleteAnnonce(id){
   if(!confirm("Confirmer suppression ?")) return;
-  const res=await fetch(`${WORKER_URL}/annonces/${id}`,{
-    method:"DELETE",
-    credentials:"include"
-  });
-  if(res.ok) loadAnnonces();
+  try{
+    const res=await fetch(`${WORKER_URL}/annonces/${id}`,{
+      method:"DELETE",
+      credentials:"include"
+    });
+    if(res.ok) loadAnnonces();
+    else alert("Erreur suppression");
+  }catch(err){
+    console.error("Erreur suppression:", err);
+    alert("Erreur réseau");
+  }
 }
 
 /* EDIT (simple) */
 async function editAnnonce(a){
   const t=prompt("Titre",a.title);
   if(t===null) return;
-  await fetch(`${WORKER_URL}/annonces/${a.id}`,{
-    method:"PATCH",
-    credentials:"include",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({title:t})
-  });
-  loadAnnonces();
+  try{
+    await fetch(`${WORKER_URL}/annonces/${a.id}`,{
+      method:"PATCH",
+      credentials:"include",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({title:t})
+    });
+    loadAnnonces();
+  }catch(err){
+    console.error("Erreur modification:", err);
+    alert("Erreur modification");
+  }
 }
 
 el("refreshBtn").onclick=loadAnnonces;
@@ -221,9 +303,8 @@ el("logoutBtn").onclick=async()=>{
   location.href="login.html";
 };
 
-function escape(s){return String(s||"").replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function price(c){ return c!=null?(c/100).toFixed(2)+" €":"—"; }
 
-/* INIT */
 (async()=>{
   await checkSession();
   await loadAnnonces();
