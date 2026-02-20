@@ -1,296 +1,63 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
+<meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Gestion des annonces — Gaël Maignan</title>
+<title>Connexion — Annonces</title>
 <style>
   :root{--card-bg:#fff;--muted:#666;--danger:#c00}
-  body {
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    max-width: 840px;
-    margin: 28px auto;
-    padding: 0 16px;
-    color: #222;
-    background: #f7f7fb;
-  }
-
-  header { text-align:center; margin-bottom:18px; }
-  h1 { font-size:20px; margin:8px 0; }
-
-  .hidden { display: none; }
-  .sr-only { position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; }
-
-  input, textarea, button, select {
-    width: 100%;
-    box-sizing: border-box;
-    font-size: 15px;
-  }
-
-  input, textarea, select {
-    padding: 10px;
-    margin: 8px 0;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    background: var(--card-bg);
-  }
-
-  textarea { min-height: 110px; resize: vertical; }
-
-  button {
-    padding: 10px 12px;
-    margin-top: 8px;
-    cursor: pointer;
-    border-radius: 6px;
-    border: 0;
-    background: #0a6cff;
-    color: #fff;
-    font-weight: 600;
-  }
-
-  button.secondary {
-    background: #efefef;
-    color: #111;
-  }
-
-  button.danger {
-    background: var(--danger);
-  }
-
-  .error { color: var(--danger); margin-top: 8px; }
-  .success { color: green; margin-top: 8px; }
-
-  .card {
-    border-radius: 8px;
-    background: var(--card-bg);
-    padding: 18px;
-    box-shadow: 0 4px 14px rgba(20,20,40,0.04);
-    border: 1px solid rgba(20,20,40,0.04);
-    margin-bottom: 12px;
-  }
-
-  .loading { text-align: center; font-weight: 600; color: var(--muted); }
-
-  .row { display:flex; gap:8px; }
-  .small { font-size: 13px; color: var(--muted); margin-top:6px; }
-
-  .actions { display:flex; gap:8px; margin-top:12px; }
-  .actions button { flex:1; }
-
-  .muted { color: var(--muted); font-size: 13px; }
-
-  /* annonces list */
-  .annonces-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:12px; margin-top:12px; }
-  .annonce { padding:12px; border-radius:8px; background:#fff; border:1px solid #eee; }
-  .annonce h3 { margin:0 0 6px 0; font-size:16px; }
-  .meta { font-size:13px; color:var(--muted); margin-bottom:8px; }
-  .annonce p { margin:4px 0 0 0; color:#333; }
-  .annonce .controls { display:flex; gap:8px; margin-top:10px; }
-
-  .badge { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; background:#f3f6ff; color:#0a6cff; }
-
-  .form-row { display:flex; gap:8px; }
-  .form-row > * { flex:1; }
-  .note { font-size:13px; color:#666; margin-top:8px; }
-
-  .mini { font-size:13px; color: #666; }
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;max-width:480px;margin:40px auto;padding:0 16px;background:#f7f7fb;color:#222}
+  .card{background:var(--card-bg);padding:18px;border-radius:8px;border:1px solid rgba(20,20,40,0.04);box-shadow:0 4px 14px rgba(20,20,40,0.04)}
+  h1{font-size:18px;margin:0 0 8px}
+  input,button{width:100%;box-sizing:border-box;font-size:15px;padding:10px;border-radius:6px;border:1px solid #ddd;background:#fff}
+  button{margin-top:10px;border:0;background:#0a6cff;color:#fff;font-weight:600;cursor:pointer}
+  .secondary{background:#efefef;color:#111}
+  .muted{color:var(--muted);font-size:13px;margin-top:8px}
+  .error{color:var(--danger);margin-top:8px}
+  .row{display:flex;gap:8px}
+  .row button{flex:1}
 </style>
 </head>
 <body>
+  <main class="card" aria-live="polite">
+    <h1>Se connecter</h1>
+    <p class="muted">Accède à l'espace de publication d'annonces.</p>
 
-<header>
-  <h1>Espace utilisateur — Annonces</h1>
-  <p class="muted">Créer et gérer vos annonces — gael-maignan.fr</p>
-</header>
+    <label class="sr-only" for="username">Email</label>
+    <input id="username" type="email" placeholder="email" autocomplete="username" value="contact@gael-maignan.fr" />
 
-<div id="loading" class="loading card">Vérification de la session…</div>
+    <label class="sr-only" for="password">Mot de passe</label>
+    <input id="password" type="password" placeholder="mot de passe" autocomplete="current-password" value="password" />
 
-<!-- LOGIN -->
-<div id="loginCard" class="card hidden" aria-live="polite">
-  <h2>Connexion</h2>
-  <label class="sr-only" for="username">Adresse e-mail</label>
-  <input id="username" type="email" placeholder="email" value="contact@gael-maignan.fr" autocomplete="username" />
-  <label class="sr-only" for="password">Mot de passe</label>
-  <input id="password" type="password" placeholder="mot de passe" value="password" autocomplete="current-password" />
-  <div class="row">
-    <button id="loginBtn" onclick="handleLogin()">Se connecter</button>
-    <button class="secondary" onclick="fillDemo()">Démo</button>
-  </div>
-  <div id="loginError" class="error" role="status" aria-live="polite"></div>
-  <div class="small">Mot de passe oublié ? contacter l'administrateur.</div>
-</div>
-
-<!-- DASHBOARD -->
-<div id="dashboardCard" class="card hidden" aria-live="polite">
-  <h2>Dashboard</h2>
-  <p><strong>Utilisateur :</strong> <span id="userEmail"></span> <span id="meBadge" class="badge hidden">c'est vous</span></p>
-  <p class="mini"><strong>Profil public</strong> — <span id="level"></span> • XP: <span id="xp"></span></p>
-
-  <div class="actions" style="margin-top:12px">
-    <button onclick="toggleChangePassword()">Changer le mot de passe</button>
-    <button class="secondary" onclick="logout()">Se déconnecter</button>
-  </div>
-
-  <div id="changePwdCard" class="card hidden" style="margin-top:12px;">
-    <h3>Changer le mot de passe</h3>
-    <label class="sr-only" for="currentPassword">Mot de passe actuel</label>
-    <input id="currentPassword" type="password" placeholder="Mot de passe actuel" autocomplete="current-password" />
-    <label class="sr-only" for="newPassword">Nouveau mot de passe</label>
-    <input id="newPassword" type="password" placeholder="Nouveau mot de passe" autocomplete="new-password" />
-    <label class="sr-only" for="confirmPassword">Confirmer nouveau mot de passe</label>
-    <input id="confirmPassword" type="password" placeholder="Confirmer le nouveau mot de passe" autocomplete="new-password" />
-    <div class="small">Après changement, toutes les sessions seront déconnectées.</div>
-    <div class="row" style="margin-top:10px">
-      <button id="changePwdBtn" onclick="changePassword()">Valider</button>
-      <button class="secondary" onclick="toggleChangePassword()">Annuler</button>
+    <div class="row" style="margin-top:8px">
+      <button id="loginBtn">Se connecter</button>
+      <button id="demoBtn" class="secondary">Démo</button>
     </div>
-    <div id="changePwdError" class="error" role="status" aria-live="polite"></div>
-    <div id="changePwdSuccess" class="success" role="status" aria-live="polite"></div>
-  </div>
-</div>
 
-<!-- CREATE ANNOUNCE -->
-<div id="createCard" class="card hidden" aria-live="polite">
-  <h2>Créer une annonce</h2>
-  <label for="annTitle" class="sr-only">Titre</label>
-  <input id="annTitle" type="text" placeholder="Titre (ex: Petites réparations - plomberie)" maxlength="150" />
-  <label for="annDesc" class="sr-only">Description</label>
-  <textarea id="annDesc" placeholder="Description détaillée (précisez localisation, disponibilité, etc.)"></textarea>
+    <div id="loginError" class="error" role="status" aria-live="polite"></div>
 
-  <div class="form-row">
-    <div>
-      <label class="sr-only" for="annPrice">Prix (€)</label>
-      <input id="annPrice" placeholder="Prix en euros (ex: 35.00)" inputmode="decimal" />
-    </div>
-    <div>
-      <label class="sr-only" for="annLocation">Localisation</label>
-      <input id="annLocation" placeholder="Localisation (ex: Paris 11)" />
-    </div>
-  </div>
-
-  <div class="row" style="margin-top:6px;">
-    <button id="createBtn" onclick="createAnnonce()">Publier l'annonce</button>
-    <button class="secondary" onclick="resetCreateForm()">Réinitialiser</button>
-  </div>
-
-  <div id="createError" class="error" role="status" aria-live="polite"></div>
-  <div id="createSuccess" class="success" role="status" aria-live="polite"></div>
-  <div class="note">Prix stocké côté API en centimes (euros → centimes automatiquement).</div>
-</div>
-
-<!-- ANNONCES PUBLICS -->
-<div id="publicAnnoncesCard" class="card hidden" aria-live="polite">
-  <div style="display:flex; justify-content:space-between; align-items:center;">
-    <h2 style="margin:0">Annonces publiques</h2>
-    <div>
-      <button class="secondary" onclick="loadAnnonces()">Rafraîchir</button>
-    </div>
-  </div>
-
-  <div id="annoncesContainer" class="annonces-grid" style="margin-top:12px"></div>
-
-  <div id="annoncesMsg" class="mini muted" style="margin-top:8px"></div>
-</div>
+    <p class="muted" style="margin-top:12px">Si tu n'as pas de compte, contacte l'administrateur.</p>
+  </main>
 
 <script>
 const WORKER_URL = "https://api.gael-maignan.fr";
 
 function el(id){ return document.getElementById(id); }
-function show(id){ el(id).classList.remove("hidden"); }
-function hide(id){ el(id).classList.add("hidden"); }
 
-function showLoading() {
-  show("loading");
-  hide("loginCard");
-  hide("dashboardCard");
-  hide("createCard");
-  hide("publicAnnoncesCard");
-}
+el("demoBtn").addEventListener("click", (e)=>{
+  el("username").value = "contact@gael-maignan.fr";
+  el("password").value = "password";
+});
 
-function showLogin() {
-  hide("loading");
-  show("loginCard");
-  hide("dashboardCard");
-  hide("createCard");
-  show("publicAnnoncesCard"); // allow browsing public annonces even if not logged
-}
-
-function showDashboard() {
-  hide("loading");
-  hide("loginCard");
-  show("dashboardCard");
-  show("createCard");
-  show("publicAnnoncesCard");
-}
-
-function toggleChangePassword() {
-  const card = el("changePwdCard");
-  card.classList.toggle("hidden");
-  el("changePwdError").innerText = "";
-  el("changePwdSuccess").innerText = "";
-  if (card.classList.contains("hidden")) {
-    el("currentPassword").value = "";
-    el("newPassword").value = "";
-    el("confirmPassword").value = "";
-  } else {
-    el("currentPassword").focus();
-  }
-}
-
-async function checkSession() {
-  showLoading();
-  try {
-    const res = await fetch(`${WORKER_URL}/user-info`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({})
-    });
-
-    if (res.status === 401) {
-      // no session: show login + public annonces
-      showLogin();
-      await loadAnnonces();
-      return;
-    }
-
-    const info = await res.json();
-    populateDashboard(info);
-    showDashboard();
-    await loadAnnonces();
-
-  } catch (err) {
-    console.error("Erreur session:", err);
-    // fallback: show login but still load public annonces
-    showLogin();
-    await loadAnnonces();
-  }
-}
-
-function populateDashboard(info) {
-  el("userEmail").innerText = info.username ?? info.email ?? "N/A";
-  el("level").innerText = info.level ?? "—";
-  el("xp").innerText = info.xp ?? "—";
-  // save the public profile for UI usage (no id guaranteed)
-  window.__profile = info || {};
-  // if we have stored local user id from a previous login, show badge
-  const meId = localStorage.getItem("meId");
-  if (meId) {
-    el("meBadge").classList.remove("hidden");
-  } else {
-    el("meBadge").classList.add("hidden");
-  }
-}
-
-async function handleLogin() {
+el("loginBtn").addEventListener("click", async (e)=>{
   const username = el("username").value.trim();
   const password = el("password").value;
-  const errorDiv = el("loginError");
-  errorDiv.innerText = "";
+  const err = el("loginError");
+  err.innerText = "";
   el("loginBtn").disabled = true;
 
   if (!username || !password) {
-    errorDiv.innerText = "Email et mot de passe requis.";
+    err.innerText = "Email et mot de passe requis.";
     el("loginBtn").disabled = false;
     return;
   }
@@ -299,404 +66,31 @@ async function handleLogin() {
     const res = await fetch(`${WORKER_URL}/login`, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: {"Content-Type":"application/json"},
       body: JSON.stringify({ username, password })
     });
 
     const data = await res.json().catch(()=>({}));
 
     if (res.ok && data.success) {
-      // store user id locally if backend returned it
+      // store id locally if backend returned it
       if (data.user && data.user.id) {
         localStorage.setItem("meId", String(data.user.id));
       }
-      await checkSession();
+      // redirect to annonces page
+      window.location.href = "/annonces.html";
     } else if (res.status === 401) {
-      errorDiv.innerText = "Identifiants incorrects.";
+      err.innerText = "Identifiants incorrects.";
     } else {
-      errorDiv.innerText = data.error || "Erreur lors de la connexion.";
+      err.innerText = data.error || "Erreur lors de la connexion.";
     }
-
-  } catch (err) {
-    errorDiv.innerText = "Erreur serveur.";
-    console.error(err);
+  } catch (e) {
+    console.error("login error", e);
+    err.innerText = "Erreur réseau / serveur.";
   } finally {
     el("loginBtn").disabled = false;
   }
-}
-
-async function logout() {
-  try {
-    await fetch(`${WORKER_URL}/logout`, {
-      method: "POST",
-      credentials: "include"
-    });
-  } catch (e) { console.warn("logout error", e); }
-  localStorage.removeItem("meId");
-  showLogin();
-  await loadAnnonces();
-}
-
-function fillDemo(){
-  el("username").value = "contact@gael-maignan.fr";
-  el("password").value = "password";
-}
-
-async function changePassword() {
-  const cur = el("currentPassword").value || "";
-  const nw = el("newPassword").value || "";
-  const conf = el("confirmPassword").value || "";
-  const err = el("changePwdError");
-  const ok = el("changePwdSuccess");
-  err.innerText = ""; ok.innerText = "";
-  el("changePwdBtn").disabled = true;
-
-  if (!cur || !nw || !conf) {
-    err.innerText = "Tous les champs sont requis.";
-    el("changePwdBtn").disabled = false;
-    return;
-  }
-  if (nw !== conf) {
-    err.innerText = "Les mots de passe ne correspondent pas.";
-    el("changePwdBtn").disabled = false;
-    return;
-  }
-  if (nw === cur) {
-    err.innerText = "Le nouveau mot de passe doit être différent de l'actuel.";
-    el("changePwdBtn").disabled = false;
-    return;
-  }
-
-  try {
-    const res = await fetch(`${WORKER_URL}/change-password`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ currentPassword: cur, newPassword: nw })
-    });
-
-    const data = await res.json().catch(()=>({}));
-
-    if (res.ok) {
-      ok.innerText = "Mot de passe changé — vous êtes déconnecté·e. Veuillez vous reconnecter.";
-      localStorage.removeItem("meId");
-      setTimeout(()=>logout(), 1200);
-    } else {
-      if (res.status === 401) {
-        err.innerText = data.error || "Authentification requise / mot de passe incorrect.";
-        setTimeout(()=>showLogin(), 900);
-      } else {
-        err.innerText = data.error || "Erreur lors du changement de mot de passe.";
-      }
-    }
-  } catch (e) {
-    err.innerText = "Erreur réseau / serveur.";
-    console.error("change-password error", e);
-  } finally {
-    el("changePwdBtn").disabled = false;
-  }
-}
-
-/* =========================
-   ANNONCES: create / list / edit / delete
-   ========================= */
-
-function resetCreateForm() {
-  el("annTitle").value = "";
-  el("annDesc").value = "";
-  el("annPrice").value = "";
-  el("annLocation").value = "";
-  el("createError").innerText = "";
-  el("createSuccess").innerText = "";
-}
-
-function centsFromInput(str) {
-  const v = String(str).trim().replace(",", ".");
-  if (v === "") return null;
-  const n = Number(v);
-  if (Number.isNaN(n)) return null;
-  return Math.round(n * 100);
-}
-
-function formatPrice(cents) {
-  if (cents === null || cents === undefined) return "—";
-  return (cents/100).toFixed(2) + " €";
-}
-
-async function createAnnonce() {
-  const title = el("annTitle").value.trim();
-  const description = el("annDesc").value.trim();
-  const priceInput = el("annPrice").value.trim();
-  const location = el("annLocation").value.trim();
-  const err = el("createError");
-  const ok = el("createSuccess");
-  err.innerText = ""; ok.innerText = "";
-  el("createBtn").disabled = true;
-
-  if (!title) {
-    err.innerText = "Le titre est requis.";
-    el("createBtn").disabled = false;
-    return;
-  }
-
-  const priceCents = centsFromInput(priceInput);
-
-  const payload = {
-    title,
-    description: description || null,
-    price: priceCents, // API expects integer (we use centimes)
-    location: location || null
-  };
-
-  try {
-    const res = await fetch(`${WORKER_URL}/annonces`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json().catch(()=>({}));
-
-    if (res.ok) {
-      ok.innerText = "Annonce créée !";
-      // if backend returns id, store it locally for immediate display
-      if (data && data.id) {
-        // append to list locally (optimistic)
-        appendAnnonceToDOM({
-          id: data.id,
-          user_id: localStorage.getItem("meId") || "me?",
-          title: title,
-          description: description,
-          price: priceCents,
-          location: location,
-          is_active: 1,
-          created_at: Math.floor(Date.now()/1000),
-          updated_at: Math.floor(Date.now()/1000)
-        }, true);
-      } else {
-        // fallback: reload annonces list
-        loadAnnonces();
-      }
-      resetCreateForm();
-    } else if (res.status === 401) {
-      err.innerText = data.error || "Authentification requise pour créer une annonce.";
-      // force login view
-      setTimeout(()=>showLogin(), 800);
-    } else {
-      err.innerText = data.error || "Erreur lors de la création de l'annonce.";
-    }
-
-  } catch (e) {
-    err.innerText = "Erreur réseau / serveur.";
-    console.error("createAnnonce error", e);
-  } finally {
-    el("createBtn").disabled = false;
-  }
-}
-
-/* load public annonces */
-// remplace entièrement la fonction loadAnnonces() par ceci
-async function loadAnnonces() {
-  const container = el("annoncesContainer");
-  const msg = el("annoncesMsg");
-  container.innerHTML = "";
-  msg.innerText = "Chargement…";
-  try {
-    const res = await fetch(`${WORKER_URL}/annonces?limit=50`, {
-      method: "GET",
-      credentials: "include"
-    });
-    if (!res.ok) {
-      msg.innerText = "Impossible de charger les annonces.";
-      console.warn("loadAnnonces: non-ok response", res.status);
-      return;
-    }
-
-    const data = await res.json().catch(()=>null);
-    console.debug("loadAnnonces - raw response:", data);
-
-    // Normalise plusieurs formats possibles renvoyés par l'API
-    let annonces = [];
-    if (!data) {
-      annonces = [];
-    } else if (Array.isArray(data.annonces)) {
-      annonces = data.annonces;
-    } else if (data.annonces && Array.isArray(data.annonces.results)) {
-      // Cloudflare D1 .all() -> { results: [...] }
-      annonces = data.annonces.results;
-    } else if (Array.isArray(data)) {
-      // si l'API renvoie directement un tableau
-      annonces = data;
-    } else if (Array.isArray(data.results)) {
-      // parfois la réponse globale contient results
-      annonces = data.results;
-    } else {
-      // fallback : essaie d'extraire la première propriété tableau utile
-      for (const k of Object.keys(data)) {
-        if (Array.isArray(data[k])) { annonces = data[k]; break; }
-      }
-    }
-
-    if (!annonces || annonces.length === 0) {
-      msg.innerText = "Aucune annonce publique pour le moment.";
-      return;
-    }
-
-    msg.innerText = `Affichage de ${annonces.length} annonce(s).`;
-    // render — on vide avant d'afficher (dé-dup si nécessaire)
-    container.innerHTML = "";
-    annonces.forEach(a => appendAnnonceToDOM(a, false));
-  } catch (e) {
-    console.error("loadAnnonces error", e);
-    msg.innerText = "Erreur réseau lors du chargement des annonces.";
-  }
-}
-
-/* Render helper */
-function appendAnnonceToDOM(a, highlight=false) {
-  const container = el("annoncesContainer");
-  const card = document.createElement("article");
-  card.className = "annonce";
-  if (highlight) card.style.boxShadow = "0 8px 30px rgba(10,108,255,0.08)";
-
-  const title = document.createElement("h3");
-  title.innerText = a.title || "Sans titre";
-  card.appendChild(title);
-
-  const meta = document.createElement("div");
-  meta.className = "meta";
-  const userPart = document.createElement("span");
-  userPart.innerText = `par ${a.user_id ?? "inconnu"}`;
-  const pricePart = document.createElement("span");
-  pricePart.style.float = "right";
-  pricePart.innerText = formatPrice(a.price);
-  meta.appendChild(userPart);
-  meta.appendChild(pricePart);
-  card.appendChild(meta);
-
-  if (a.location) {
-    const loc = document.createElement("div");
-    loc.className = "mini";
-    loc.innerText = a.location;
-    card.appendChild(loc);
-  }
-
-  if (a.description) {
-    const p = document.createElement("p");
-    p.innerText = a.description;
-    card.appendChild(p);
-  }
-
-  const controls = document.createElement("div");
-  controls.className = "controls";
-
-  // Edit button (available but server will enforce owner)
-  const editBtn = document.createElement("button");
-  editBtn.className = "secondary";
-  editBtn.innerText = "Modifier";
-  editBtn.onclick = ()=> openEditDialog(a);
-  controls.appendChild(editBtn);
-
-  // Delete button
-  const delBtn = document.createElement("button");
-  delBtn.className = "danger";
-  delBtn.innerText = "Supprimer";
-  delBtn.onclick = ()=> deleteAnnonce(a.id, card);
-  controls.appendChild(delBtn);
-
-  card.appendChild(controls);
-  // newest first (prepend)
-  container.prepend(card);
-}
-
-/* Open simple inline edit dialog (prompt-based minimal) */
-async function openEditDialog(a) {
-  // prompt for fields (simple UX). You can replace with a nicer modal.
-  const newTitle = prompt("Titre", a.title || "");
-  if (newTitle === null) return; // cancel
-  const newDesc = prompt("Description", a.description || "") ?? "";
-  const newPrice = prompt("Prix en euros (ex: 35.00) — laisser vide pour ne pas changer", a.price ? (a.price/100).toFixed(2) : "") ;
-  const newLocation = prompt("Localisation", a.location || "") ?? "";
-
-  // build patch payload only with changed values
-  const payload = {};
-  if (newTitle !== undefined && newTitle !== a.title) payload.title = newTitle;
-  if (newDesc !== undefined && newDesc !== a.description) payload.description = newDesc;
-  if (newLocation !== undefined && newLocation !== a.location) payload.location = newLocation;
-  if (newPrice !== null && String(newPrice).trim() !== "") {
-    const cents = centsFromInput(newPrice);
-    if (cents === null) {
-      alert("Prix invalide - opération annulée.");
-      return;
-    }
-    payload.price = cents;
-  }
-
-  if (Object.keys(payload).length === 0) {
-    alert("Aucune modification détectée.");
-    return;
-  }
-
-  try {
-    const res = await fetch(`${WORKER_URL}/annonces/${a.id}`, {
-      method: "PATCH",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    if (res.ok) {
-      alert("Annonce mise à jour.");
-      // refresh annonces list to show changes
-      loadAnnonces();
-    } else if (res.status === 403) {
-      const data = await res.json().catch(()=>({}));
-      alert(data.error || "Interdit : vous n'êtes pas le créateur de cette annonce.");
-    } else if (res.status === 401) {
-      alert("Authentification requise. Veuillez vous reconnecter.");
-      showLogin();
-    } else {
-      const data = await res.json().catch(()=>({}));
-      alert(data.error || "Erreur lors de la mise à jour.");
-    }
-  } catch (e) {
-    console.error("editAnnonce error", e);
-    alert("Erreur réseau.");
-  }
-}
-
-async function deleteAnnonce(id, domNode) {
-  if (!confirm("Confirmer la suppression (soft-delete) de cette annonce ?")) return;
-  try {
-    const res = await fetch(`${WORKER_URL}/annonces/${id}`, {
-      method: "DELETE",
-      credentials: "include"
-    });
-
-    if (res.ok) {
-      // remove from DOM
-      if (domNode && domNode.parentNode) domNode.parentNode.removeChild(domNode);
-      else loadAnnonces();
-    } else if (res.status === 403) {
-      const data = await res.json().catch(()=>({}));
-      alert(data.error || "Interdit : vous n'êtes pas le créateur de cette annonce.");
-    } else if (res.status === 401) {
-      alert("Authentification requise.");
-      showLogin();
-    } else {
-      const data = await res.json().catch(()=>({}));
-      alert(data.error || "Erreur lors de la suppression.");
-    }
-  } catch (e) {
-    console.error("deleteAnnonce error", e);
-    alert("Erreur réseau lors de la suppression.");
-  }
-}
-
-/* Démarrage */
-window.addEventListener("DOMContentLoaded", checkSession);
+});
 </script>
-
 </body>
 </html>
