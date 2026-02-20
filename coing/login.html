@@ -78,7 +78,7 @@ el("loginBtn").addEventListener("click", async (e)=>{
         localStorage.setItem("meId", String(data.user.id));
       }
       // redirect to annonces page
-      window.location.href = "/annonces.html";
+      window.location.href = "annonces.html";
     } else if (res.status === 401) {
       err.innerText = "Identifiants incorrects.";
     } else {
