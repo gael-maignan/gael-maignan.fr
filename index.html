@@ -1,883 +1,1270 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Gaël Maignan</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bièvre histoire au fil de l’eau</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- DOMPurify pour sanitiser le HTML des descriptions --><script src="https://unpkg.com/dompurify@2.4.0/dist/purify.min.js"></script>
 
-  <meta name="description" content="Né à Paris en mars 2004, Gaël Maignan est un artiste et auteur français dont le travail mêle écriture, photographie et arts plastiques. Urbaniste de formation, il développe une pratique à la croisée de la création artistique et de l’exploration urbaine, où mémoire, territoires et récits sensibles se répondent.">
-  <meta name="keywords" content="Gaël Maignan, gael maignan, auteur, Urbanisme, EIVP">
-
-  <meta property="og:image" content="https://gael-maignan.fr/images/cover.webp">
-
-
-  <link rel="shortcut icon" href="images/favicon.ico" type="image/png"/>
-  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-  <link rel="icon" href="images/favicon.png" type="image/png">
-  <link rel="icon" sizes="32x32" href="images/favicon-32.png" type="image/png">
-  <link rel="icon" sizes="96x96" href="images/favicon-96.png" type="image/png">
-
-  <script type="module" src="https://gael-maignan.fr/logs"></script>
+    <script type="module" src="https://gael-maignan.fr/logs"></script>
 
 
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400&display=swap" rel="stylesheet">
 
 
+    <style>
+:root{
+  --marker-color: #f39c12;
+  --new-marker: #2ecc71;
+  --water: #6D91BA;
+  --ui-bg: rgba(255,255,255,0.95);
+  --card-radius: 10px;
+  --card-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  --strong-color: #2c3e50;
+  --muted-color: #6c7a89;
+  --text-color: #666666;
+}
 
-  <link rel="stylesheet" href="style/main.css">
+/* Reset + base */
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body,#map{height:100%;}
+body{
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  background:#f5f5f5;
+  color:var(--text-color);
+  font-size:13px;
+}
+a{color:#6c7a89;}
+.italic{font-style:italic;}
+h2,h3{color:var(--strong-color);}
+h3{font-size:16px;padding-bottom:5px;}
 
-  <script>
-        // détection basique du mobile
-    const isMobile = window.innerWidth <= 768;
-
-  </script>
-
-  <style>
-
-    html.no-scroll, body.no-scroll{
-      height:100vh;
-      overflow:hidden;
-      touch-action:none;
-    }
-
-/* ---------- Intro (hero) ---------- */
-.intro{
+/* Map container */
+#map{
   position:fixed;
   inset:0;
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  gap:8px;
-  background:transparent; /* background moved to ::before */
-  z-index:60;
-  pointer-events:none;
-  transition:height .7s cubic-bezier(.16,.84,.44,1), transform .45s ease, opacity .4s ease;
-  will-change:height, transform, opacity;
-  padding:2rem;
-  text-align:center;
-  overflow:hidden; /* important for the blurred pseudo-element */
-}
-
-/* blurred background image (only the background is blurred) */
-.intro::before{
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0; /* sits behind the content of .intro */
-  background: url('images/toile.jpg') no-repeat center center;
-  background-size: cover;
-  /* Slight scale to hide blur edges */
-  transform: scale(1.06);
-  filter: blur(8px);            /* <-- ajuster la valeur ici */
-  will-change: filter, transform;
-  /* improve rendering on some browsers */
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  /* Optional: use hardware acceleration hint */
-  transform-origin: center center;
-  pointer-events: none;
-}
-
-/* optional dark overlay for contrast */
-.intro::after{
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1; /* above the blurred image, below the text */
-  pointer-events: none;
-  /*background: linear-gradient(180deg, rgba(116,157,163,0.08), rgba(116,157,163,0.22));*/
-}
-
-/* ensure .intro content sits above pseudo-elements */
-.intro *{
-  position: relative;
-  z-index: 2;
-}
-
-/* keep your existing collapsed/inflow variants working */
-.intro--collapse{ height:40vh; }
-.intro--inflow{
-  position:relative;
-  inset:auto;
-  height:40vh;
   width:100%;
-  z-index:10;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  gap:8px;
-  margin-top: var(--header-height, 0px);
-  transition: margin-top .35s ease, height .2s ease, padding .2s ease;
-  pointer-events:auto;
-  padding:2rem 1.25rem;
+  height:100vh;
+  z-index:0;
 }
 
-/* keep animation and title styles as-is (no change needed) */
+/* Shared card style (Title / Legend / Info button background, etc.) */
+.ui-card{
+  background:var(--ui-bg);
+  padding:12px;
+  border-radius:var(--card-radius);
+  box-shadow:var(--card-shadow);
+  backdrop-filter:blur(4px);
+}
+
+/* Title card */
+.title{
+  position:absolute;
+  top:18px;
+  left:18px;
+  z-index:1100;
+  padding:12px 16px;
+  max-width:360px;
+  background: rgba(255,255,255,1);
+  border-radius:var(--card-radius);
+  box-shadow:0 6px 18px rgba(0,0,0,0.1);
+}
+.title h1{font-size:20px;color:var(--strong-color);}
+.title p{font-size:13px;color:var(--muted-color);margin:8px 0;}
+.title .credits{font-size:12px;}
+.title a{color:var(--water);}
+
+/* Legend */
+.legend{
+  position:absolute;
+  right:18px;
+  bottom:18px;
+  z-index:1100;
+  width:220px;
+  font-size:13px;
+  padding:12px;
+  background: rgba(255,255,255,1);
+  border-radius:var(--card-radius);
+  box-shadow:0 6px 18px rgba(0,0,0,0.1);
+}
+.legend h4{margin-bottom:8px;color:var(--strong-color);}
+.legend-item{display:flex;align-items:center;gap:8px;margin:6px 0;color:#556;}
+.legend-line{
+  width:34px;
+  height:4px;
+  border-radius:2px;
+  background: linear-gradient(
+    90deg,
+    rgba(109,145,186,0.4) 0%,
+    rgba(109,145,186,1) 50%,
+    rgba(109,145,186,0.4) 100%
+  );
+  background-size: 200% 100%;
+  animation: legend-flow 1.6s linear infinite;
+  box-shadow: 0 0 6px rgba(46,134,193,0.25);
+}
+@keyframes legend-flow {
+  from { background-position: 0% 50%; }
+  to   { background-position: -200% 50%; }
+}
+
+/* Pulsation sur l'élément de la légende (utilise ::after pour éviter de changer le HTML) */
+.legend-marker{
+  --legend-color: var(--marker-color); /* couleur par défaut */
+
+  position: relative;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--legend-color);
+  border: 2px solid #fff;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--legend-color) 60%, transparent);
+  overflow: visible;
+}
+/* anneau pulsant (décoratif) */
+.legend-marker::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%) scale(1);
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  background:color-mix(in srgb, var(--legend-color) 25%, transparent);
+  box-shadow:0 0 10px color-mix(in srgb, var(--legend-color) 40%, transparent);
+  pointer-events:none;
+  animation:legend-pulse 2000ms infinite ease-out;
+}
+
+/* animation (plus douce que la marque sur la carte) */
+@keyframes legend-pulse {
+  0%   { transform: translate(-50%, -50%) scale(0.85); opacity: 0.9; }
+  60%  { transform: translate(-50%, -50%) scale(1.9); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}
+
+@media (max-width: 900px){
+  .legend{
+    left:12px;
+    right:12px;
+    bottom:12px;
+    width:auto;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:16px;
+
+    padding:10px 14px;
+    border-radius:999px; /* effet pilule */
+  }
+
+  .legend h4{
+    display:none;
+  }
+
+  .legend-item{
+    margin:0;
+    gap:6px;
+    font-size:12px;
+    white-space:nowrap;
+  }
+}
 
 
-    .intro-title{
-      font-weight:800;
-      font-size:clamp(3.2rem, 7.2vw, 4rem);
-      transform-origin:center center;
-      opacity:0;
-      animation:introPop 1900ms cubic-bezier(.16,.84,.44,1) forwards;
-      will-change:transform, opacity;
-      margin:0;
-      background: url('images/image2.png') no-repeat center center;
-      background-size: cover;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      color: transparent;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-    }
-    @keyframes introPop{
-      0%{opacity:0; transform:scale(.8) translateY(8px) rotate(.5deg); filter:blur(6px)}
-      40%{opacity:1; transform:scale(1.06) translateY(-6px) rotate(-.3deg); filter:blur(0)}
-      70%{transform:scale(.98) translateY(0)}
-      100%{opacity:1; transform:scale(1) translateY(0)}
-    }
+/* Popup styling */
+.leaflet-popup-content-wrapper{border-radius:10px;padding:0;overflow:hidden;}
+.leaflet-popup-close-button{top:8px !important;right:8px !important;color:#666;font-size:20px;}
+.popup-content{padding:12px;max-width:280px;text-align:center;}
+.popup-content h3{margin-bottom:6px;color:var(--strong-color);font-size:15px;}
+.popup-content p{margin:6px 0;color:#555;font-size:13px;line-height:1.4;}
+
+/* Popup Leaflet – ombre plus légère */
+.leaflet-popup-content-wrapper {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.11) !important;
+}
+/* Pointe de la popup (le petit triangle) */
+.leaflet-popup-tip {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.11) !important;
+}
+
+/* Popup thumbnails / captions */
+.popup-thumb{
+  width:100%;
+  max-width:260px;
+  height:auto;
+  border-radius:8px;
+  display:block;
+  margin:8px auto 6px;
+  object-fit:cover;
+  box-shadow:0 6px 18px rgba(0,0,0,0.06);
+}
+.popup-description{padding:5px 0;}
+.popup-caption{font-size:11px;color:#666;line-height:1.3;margin-bottom:8px;text-align:center;}
+
+/* Comparison caption (right column footer) */
+.comparison-caption{
+  font-size:12px;color:#96A6B7;padding:8px 10px;background:#fff;border-top:1px solid #eee;border-radius:0 0 8px 8px;margin-top:8px;text-align: center;
+}
+
+/* Evolution button */
+.btn-evolution, a.btn-evolution{
+  display:inline-block;margin:8px auto 0;padding:8px 12px;background:var(--water);color:#fff;border-radius:6px;text-decoration:none;border:none;cursor:pointer;font-size:13px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight:400;
+}
+.btn-evolution:active{transform:translateY(1px);}
+
+/* Modal (global, single definition) */
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:1300;
+  background:rgba(0,0,0,0.6);
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.modal.open{display:flex;}
+
+.modal-content{
+  width:100%;
+  max-width:1100px;
+  max-height:90vh;
+  background:#fff;
+  border-radius:12px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,0,0,0.35);
+}
+.modal-content p{padding:5px 0;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #DFEAF3;}
+.modal-header h2{font-size:18px;color:var(--strong-color);max-width:60%;}
+
+/* Close button (modern) */
+.close{
+  width:32px;height:32px;border-radius:50%;background:#fff;border:2px solid var(--water);color:var(--water);font-size:20px;font-weight:bold;line-height:32px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s ease;
+}
+.close:hover{background:var(--water);color:#fff;border-color:var(--water);}
+
+/* Modal body and layout */
+.modal-body{
+  display:flex;
+  gap:12px;
+  flex:1;
+  overflow:visible; /* On desktop, children scroll individually */
+}
+.side{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  padding:12px;
+  min-width:0; /* important for flex children shrink */
+}
+.side.left{min-width:0;}
+.comparison-iframe{
+  width:100%;
+  height:100%;
+  border:none;
+  border-radius:8px;
+  background:#f5f5f5;
+  display:block;
+  min-height:320px;
+  flex:1 1 auto;
+}
+.side.right{
+  overflow:auto;
+  max-height:calc(90vh - 72px);
+  -webkit-overflow-scrolling:touch;
+}
+.comparison-image{width:100%;height:auto;object-fit:cover;border-radius:8px;}
+
+/* Pulsing marker */
+.custom-marker{position:relative;display:block;}
+.custom-marker .pulse{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:28px;height:28px;border-radius:50%;
+  background:color-mix(in srgb, var(--marker-color) 25%, transparent);
+  animation:pulse 2s infinite;
+}
+.custom-marker .dot{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:12px;height:12px;border-radius:50%;background:var(--marker-color);border:2px solid #fff;
+  box-shadow:0 2px 8px color-mix(in srgb, var(--marker-color) 60%, transparent);
+}
+@keyframes pulse{
+  0%   { transform:translate(-50%,-50%) scale(0.8); opacity:0.9; }
+  70%  { transform:translate(-50%,-50%) scale(1.6); opacity:0; }
+  100% { transform:translate(-50%,-50%) scale(1.8); opacity:0; }
+}
+
+/* Flowing SVG line */
+.flowing-line{stroke:var(--water);stroke-width:4;stroke-linecap:round;stroke-opacity:0.95;filter:drop-shadow(0 0 6px rgba(46,134,193,0.3));stroke-dasharray:12 8;animation:dash 1.6s linear infinite;}
+.flowing-line.glow{stroke:var(--water);stroke-width:8;stroke-opacity:0.14;filter:blur(6px);}
+@keyframes dash{to{stroke-dashoffset:-40;}}
+
+/* Leaflet controls and popup font enforcement */
+.leaflet-control-container{z-index:1200;}
+.leaflet-popup,
+.leaflet-popup-content-wrapper,
+.leaflet-popup-content,
+.btn-evolution{
+  font-family:'Space Grotesk',sans-serif !important;
+  font-weight:400;
+}
+
+/* Page-level info button + info modal tweaks */
+#infoButton{
+  position:absolute;top:18px;right:18px;z-index:1150;width:44px;height:44px;border-radius:10px;background:var(--ui-bg);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--card-shadow);border:2px solid var(--marker-color);
+}
+#infoButton:focus,#infoButton:hover{transform:translateY(-2px);outline:none;}
+#infoButton svg{width:20px;height:20px;fill:var(--marker-color);}
+
+#infoModal .modal-content{max-width:620px;width:calc(100% - 16px);}
+#infoModal .modal-header{padding:12px 14px;}
+#infoModal .modal-body{padding:14px;display:flex;flex-direction:column;gap:12px;}
+.info-desc{font-size:14px;color:#444;margin-bottom:10px;}
+.info-list{font-size:14px;margin:8px 0 0 18px;text-align:left;color:#444;}
+.info-contact{margin-top:12px;font-size:13px;color:#333;}
+
+/* Responsive rules */
+@media (max-width: 900px){
+  .title{left:12px;right:12px;top:12px;}
+  .title{display:none;} /* hide title on small screens */
+  .legend{left:12px;right:12px;bottom:12px;width:auto;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .modal-body{flex-direction:column-reverse;gap:12px;}
+  #infoModal .modal-body{flex-direction:column !important;}
+}
+
+@media (max-width: 768px){
+  /* Redundant with 900px rule but kept for breakpoint precision if needed */
+  .title{display:none;}
+}
+
+@media (max-width: 480px){
+  .popup-content{max-width:220px;}
+  .title h1{font-size:16px;}
+}
+
+/* Mobile-specific modal behavior (makes entire modal scrollable) */
+@media (max-width: 900px){
+  .modal{padding:12px;overflow:auto;}
+  .modal-content{max-width:620px;max-height:95%;overflow:auto;border-radius:12px;}
+  .side.left,.side.right{max-height:none;overflow:visible;}
+}
 
 
 
 
 
-    /* Hide main initially and push it */
-    main{
+/* ===== Style archive pour images insérées dans les descriptions ===== */
+.archive-figure{
+  position:relative;
+  display:block;
+  margin:8px auto 10px;
+  max-width:260px;
+  border-radius:10px;
+  overflow:visible; /* laisse l'ombre/vignette s'afficher */
+}
 
-            margin-top:calc(3.5rem);
+.archive-figure::after{
+  /* légère vignette / patine (dynamique, non destructive) */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 10px;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.04) 35%, rgba(0,0,0,0) 80%);
+  mix-blend-mode: multiply;
+  opacity: 0.9;
+}
 
-      opacity:0;
-      pointer-events:none;
-    }
-    body.show-content main{
-      opacity:1;
-      transform:none;
-      pointer-events:auto;
-    }
+/* l'image elle-même */
+.archive-photo,
+.popup-thumb,
+.comparison-image {
+  display:block;
+  width:100%;
+  height:auto;
+  max-width:100%;
+  border-radius:8px;
+  object-fit:cover;
+  border:1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
 
 
-  </style>
+
+/* légende sous l'image (figcaption) */
+.archive-figcaption,
+.popup-caption {
+  font-size:11px;
+  color:#666;
+  line-height:1.3;
+  margin-top:6px;
+  text-align:center;
+  font-style:italic;
+}
+
+
+
+    </style>
 </head>
-<body class="no-scroll">
+<body>
 
-
-
-  <!-- Header -->
-  <header role="banner">
-
-    <!-- Desktop nav -->
-    <nav class="primary" role="navigation" aria-label="Navigation principale">
-      <a href="#">À la Une</a>
-      <a href="#urbanisme">Urbanisme Sensible</a>
-      <a href="#ecriture">Écriture</a>
-      <a href="#contact">Contact</a>
-    </nav>
-
-    <!-- Mobile controls: hamburger -->
-    <div class="mobile-controls" style="display:flex;align-items:center;">
-      <button class="nav-toggle" id="navToggle" aria-controls="mobileNav" aria-expanded="false" aria-label="Ouvrir le menu">
-        <svg class="icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-      <rect class="bar top" x="0" y="6" width="18" height="2" rx="1"></rect>
-      <rect class="bar middle" x="0" y="11" width="18" height="2" rx="1"></rect>
-      <rect class="bar bottom" x="0" y="16" width="18" height="2" rx="1"></rect>
-    </svg>
-      </button>
+    <div class="title" role="banner">
+        <h1>La Bièvre</h1>
+        <p>La Bièvre, qui s’étendait sur 36 kilomètres, pénétrait dans Paris par la Poterne des Peupliers, dans le 13ᵉ arrondissement. Sur une distance de 5 kilomètres, elle serpentait à travers les 13ᵉ et 5ᵉ arrondissements avant de se jeter dans la Seine, à hauteur de la gare d’Austerlitz. Transformée par l’activité humaine en un cours d’eau malodorant, elle fut progressivement canalisée puis enfouie en 1912.</p>
+        <!--<p><a href="https://www.paris.fr/pages/les-secrets-enfouis-de-la-bievre-riviere-parisienne-16900">En savoir plus</a></p>-->
+        <p class="credits"><a href="https://www.linkedin.com/in/gael-maignan/">Gaël Maignan</a>, Février 2026</p>
     </div>
 
-    <!-- Mobile nav panel (duplicate links for mobile) -->
-    <div id="mobileNav" class="mobile-nav" aria-hidden="true">
-      <div class="mobile-links" role="menu" aria-label="Menu principal">
-        <a href="#" role="menuitem">À la Une</a>
-        <a href="#urbanisme" role="menuitem">Urbanisme Sensible</a>
-        <a href="#ecriture" role="menuitem">Écriture</a>
-        <a href="#contact" role="menuitem">Contact</a>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main -->
-  <main role="main">
-    
-
-
-
-
-
-
-
-
-
-
-  <style>
-
-    :root{
-      --tile:#fbfbfb;            /* couleur des carreaux */
-      --grout:#d7d7d7;           /* couleur des joints */
-      --letter:#123238;         /* couleur des lettres (sombre, vert-bleu) */
-      --max-font:28px;
-    }
-
-    /* wrapper de la section */
-    .concorde-section{
-      position:relative;
-      /*min-height:60vh;*/
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-      /* léger motif de carrelage qui rappelle la station */
-      background-image:
-        linear-gradient(to right, var(--grout) 1px, transparent 1px),
-        linear-gradient(to bottom, var(--grout) 1px, transparent 1px);
-      background-size:80px 80px; /* taille des "carreaux" */
-    }
-
-    /* SVG qui contient la grille de lettres, occupe tout le conteneur */
-    .letters-svg{
-      position:absolute;inset:0;width:100%;height:100%;display:block;
-      pointer-events:none; /* la grille est décorative */
-    }
-
-    /* style par défaut des lettres */
-    .letters-svg text.letter{
-      fill:var(--letter);
-      fill-opacity:.9;
-      font-family:'Cormorant Garamond', 'Georgia', 'Times', serif;
-      font-weight:600;
-      font-size:var(--max-font);
-      dominant-baseline:middle;
-      text-anchor:middle;
-      transform-origin:center;
-      opacity:0.95;
-      /* animation douce où les lettres flottent subtilement */
-      animation:float 6s ease-in-out infinite;
-    }
-
-    @keyframes float{
-      0%{transform:translateY(0) rotate(0) scale(1); opacity:0.95}
-      25%{transform:translateY(-6px) rotate(-1.2deg) scale(1.02);}
-      50%{transform:translateY(0) rotate(0) scale(1); opacity:0.85}
-      75%{transform:translateY(6px) rotate(1.2deg) scale(.99);}
-      100%{transform:translateY(0) rotate(0) scale(1); opacity:0.95}
-    }
-
-    /* variations pour que la grille ne soit pas trop mécanique */
-    .letters-svg text.small{font-size:0.72em; fill-opacity:.75}
-    .letters-svg text.light{fill-opacity:.6}
-    .letters-svg text.ghost{fill-opacity:.35}
-
-    /* concorde-overlay contenant le texte principal */
-    .concorde-overlay{
-      position:relative; /* au-dessus du SVG */
-      z-index:3;
-      width:100%;
-      padding:48px 48px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      align-items:flex-start;
-      justify-content:center;
-      box-sizing:border-box;
-
-      border-radius: 8px;
-      backdrop-filter: blur(1px);
-      background:rgba(255,255,255,0.6);
-    }
-
-    .concorde-overlay .content{
-      width: 100%;
-      max-width: 1100px;
-      margin: auto;
-      position:relative;z-index:4; color: #0A1236;
-    }
-
-    .concorde-overlay .content h2 {
-      margin-left: 0;
-    }
-
-    .concorde-overlay h1{
-      font-size:clamp(1.6rem, 3.8vw, 3.2rem);letter-spacing:1px;
-        font-family: 'Playfair Display', serif;
-
-      color:#0A1236;
-    }
-    .concorde-overlay p{font-size:clamp(.95rem, 1.7vw, 1.1rem);opacity:.95;/*max-width:55ch*/}
-
-    /* petits ajustements responsive */
-    @media (max-width:640px){
-      :root{--max-font:20px}
-      .concorde-section{background-size:48px 48px}
-      .concorde-overlay{padding:28px}
-    
- 
-    }
-
-  </style>
-
-
-
-<section class="hero-lab" aria-labelledby="hero-lab-title">
-      <div class="hero-lab__content">
-        <h1 class="title">Gaël Maignan</h1>
-        <p>Issu d’une formation en génie urbain à l’École des Ingénieurs de la Ville de Paris, je développe une démarche transversale où se croisent urbanisme, écriture, arts visuels et création sonore.
-</p>
-      </div>
-    </section>
-
-  
-
-<!-- SECTION 1 : texte via data-text -->
-<section class="concorde-section" data-text="À la Une">
-  <svg class="letters-svg" preserveAspectRatio="none" aria-hidden="true"></svg>
-
-  <div class="concorde-overlay" role="region" aria-label="Texte d'accroche">
-    <div class="backdrop" aria-hidden="true"></div>
-    <div class="content">
-      <h2 class="title">À la Une</h2>
-      <p>Retrouvez ici mes dernières réalisations et projets en cours...</p>
-      <!--<a href="#services" class="btn" role="button">En savoir plus</a>-->
-    </div>
-  </div>
-</section>
-
-
-
-
-
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-/* Générateur multi-sections : chaque section garde son propre SVG / état.
-   Usage : ajouter data-text="..." sur la section, ou ajouter un élément .bg-text
-   à l'intérieur de la section contenant le texte.
-*/
-(() => {
-  // simple détection mobile (utilisé pour désactiver animations)
-  const isMobile = /Mobi|Android|iPhone|iPad|Tablet/i.test(navigator.userAgent);
-
-  // options par défaut (modifiable globalement ici)
-  const DEFAULTS = {
-    minCell: 44,
-    maxCell: 88,
-    maxJitter: 6
-  };
-
-  // nettoie et prépare la "pool" de lettres
-  function makePool(str) {
-    if (!str) str = '';
-    // conserver les lettres et les espaces simples, retirer ponctuation
-    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '') // enlever accents
-              .replace(/[^A-Z0-9 ]/gi, '') // autorise A-Z, chiffres et espace
-              .toUpperCase();
-  }
-
-  // crée une instance pour une section donnée
-  function createSection(sectionEl) {
-    const svg = sectionEl.querySelector('svg.letters-svg');
-    if (!svg) return null;
-
-    // récupérer texte : data-text > .bg-text > fallback
-    const dataText = sectionEl.getAttribute('data-text') || '';
-    const childTextEl = sectionEl.querySelector('.bg-text');
-    const poolRaw = dataText || (childTextEl ? childTextEl.textContent : '');
-    const pool = makePool(poolRaw) || 'CONCORDE';
-
-    let letterNodes = [];
-    let lastSize = { w: 0, h: 0 };
-    let paused = false;
-    let resizeTick = 0;
-
-    function clamp(v,a,b){ return Math.min(b, Math.max(a,v)); }
-
-    function build(force = false) {
-      if (paused && !force) return;
-
-      const w = Math.max(300, Math.floor(svg.clientWidth || sectionEl.clientWidth || window.innerWidth));
-      const h = Math.max(200, Math.floor(svg.clientHeight || sectionEl.clientHeight || window.innerHeight));
-
-      if (!force && letterNodes.length && lastSize.w === w && lastSize.h === h) return;
-      lastSize = { w, h };
-
-      const cellSize = Math.max(DEFAULTS.minCell, Math.min(DEFAULTS.maxCell, Math.floor(Math.min(w, h) / 12)));
-      const cols = Math.max(2, Math.ceil(w / cellSize));
-      const rows = Math.max(2, Math.ceil(h / cellSize));
-      const total = cols * rows;
-
-      // rebuild si besoin
-      if (letterNodes.length !== total) {
-        svg.replaceChildren();
-        letterNodes = [];
-        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-        svg.setAttribute('width', w);
-        svg.setAttribute('height', h);
-
-        const frag = document.createDocumentFragment();
-        let li = 0;
-        for (let r = 0; r < rows; r++) {
-          for (let c = 0; c < cols; c++) {
-            const xBase = (cols === 1) ? w / 2 : (c * (w / (cols - 1)));
-            const yBase = (rows === 1) ? h / 2 : (r * (h / (rows - 1)));
-            const x = clamp(Math.round(xBase + (Math.random() * 2 - 1) * DEFAULTS.maxJitter), 0, w);
-            const y = clamp(Math.round(yBase + (Math.random() * 2 - 1) * DEFAULTS.maxJitter), 0, h);
-
-            const ch = pool[li % pool.length] || ' ';
-            li++;
-
-            const t = document.createElementNS('https://www.w3.org/2000/svg', 'text');
-            t.setAttribute('x', x);
-            t.setAttribute('y', y);
-
-            const classes = ['letter'];
-            if (Math.random() < 0.12) classes.push('small');
-            if (Math.random() < 0.25) classes.push('light');
-            if (Math.random() < 0.08) classes.push('ghost');
-            t.setAttribute('class', classes.join(' '));
-
-            t.textContent = ch;
-
-            if (!isMobile) {
-              t.style.animationDelay = `${(Math.random() * 6).toFixed(2)}s`;
-              t.style.animationDuration = `${(5 + Math.random() * 6).toFixed(2)}s`;
-            } else {
-              t.style.animation = 'none';
-            }
-
-            frag.appendChild(t);
-            letterNodes.push(t);
-          }
-        }
-        svg.appendChild(frag);
-      } else {
-        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-        svg.setAttribute('width', w);
-        svg.setAttribute('height', h);
-      }
-
-      if (!paused && !isMobile) setAnimationState('running');
-    }
-
-    function setAnimationState(state) {
-      for (const n of letterNodes) {
-        n.style.animationPlayState = state;
-      }
-    }
-
-    function scheduleRebuild() {
-      cancelAnimationFrame(resizeTick);
-      resizeTick = requestAnimationFrame(() => build());
-    }
-
-    // Expose pause/resume local à la section
-    sectionEl.pauseLetters = () => {
-      if (paused) return;
-      paused = true;
-      setAnimationState('paused');
-      cancelAnimationFrame(resizeTick);
-    };
-    sectionEl.resumeLetters = () => {
-      if (!paused) return;
-      paused = false;
-      build(true);
-    };
-
-    // événement resize lié à la fenêtre et au redimensionnement du conteneur
-    const ro = new ResizeObserver(() => {
-      // si section mise en pause, on laisse pending
-      if (paused) return;
-      scheduleRebuild();
-    });
-    ro.observe(sectionEl);
-
-    // build initial
-    build(true);
-
-    // si mobile : désactiver animations
-    if (isMobile) sectionEl.pauseLetters();
-
-    // retourne un "contrôleur" basique si besoin
-    return {
-      rebuild: () => build(true),
-      pause: sectionEl.pauseLetters,
-      resume: sectionEl.resumeLetters,
-      getPool: () => pool
-    };
-  }
-
-  // initialisation : trouver toutes les sections
-  const instances = [];
-  document.querySelectorAll('.concorde-section').forEach(sec => {
-    try {
-      const inst = createSection(sec);
-      if (inst) instances.push(inst);
-    } catch (e) {
-      // ne pas interrompre l'init complète si une section plante
-      console.error('Erreur init section concorde:', e);
-    }
-  });
-
-  // API globale minimale accessible pour debug/contrôle :
-  window.__ConcordeSections = {
-    instances,
-    rebuildAll() { instances.forEach(i => i.rebuild()); },
-    pauseAll() { instances.forEach(i => i.pause()); },
-    resumeAll() { instances.forEach(i => i.resume()); }
-  };
-})();
-});
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
+    <div id="map" aria-label="Carte — La Bièvre"></div>
+
+<!-- Affichage lat / lon de la souris -->
+<div id="mouse-coords" role="status" aria-live="polite" aria-atomic="true">
+  <span class="coord" id="mouse-lat">Lat: —</span>
+  <span class="coord" id="mouse-lng">Lon: —</span>
+</div>
 
 <style>
+    /* Affiche les coordonnées de la souris en bas à gauche */
+#mouse-coords{
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  z-index: 1250;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.95);
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+  font-size: 12px;
+  color: var(--strong-color);
+  font-family: 'Space Grotesk', sans-serif;
+  pointer-events: none; /* laisse la souris interagir avec la carte */
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
 
-  .article {
-    background-color: white;
-    max-width: 500px;
-  }
+/* style monospace pour les valeurs numériques (plus lisible) */
+#mouse-coords .coord {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+  font-size: 12px;
+  color: #2c3e50;
+}
+@media (max-width: 900px){
+  #mouse-coords { display:none; }
+}
 </style>
 
 
 
-  <style>
-    
-    .cta-section {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 4rem 8%;
-      overflow: hidden;
-    }
-  .cta-section::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    /* on utilise la variable --bg définie sur la section */
-    background: var(--bg) center/cover no-repeat;
+    <div class="legend" aria-hidden="false">
+        <h4>Légende</h4>
+        <div class="legend-item"><div class="legend-marker" style="--legend-color: var(--marker-color)"></div>Archive</div>
+        <div class="legend-item"><div class="legend-marker" style="--legend-color: var(--new-marker)"></div>La Bièvre aujourd'hui</div>
 
-    z-index: 1;
+        <div class="legend-item"><div class="legend-line"></div><div>Tracé de la Bièvre</div></div>
+    </div>
+
+    <!-- Bouton d'information (page-level) -->
+<button id="infoButton" aria-label="Info" title="Informations" type="button">
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2z"/>
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM12 20c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+  </svg>
+</button>
+
+<!-- Modal d'information générale -->
+<div id="infoModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal-content" role="document" aria-labelledby="infoModalTitle">
+    <div class="modal-header">
+      <h2 id="infoModalTitle">À propos</h2>
+      <button class="close" aria-label="Fermer" type="button">&times;</button>
+    </div>
+    <div class="modal-body">
+    <h3>Une histoire qui coule de source</h3>
+      <p class="info-desc">La Bièvre, qui s’étendait sur 36 kilomètres, pénétrait dans Paris par la Poterne des Peupliers, dans le 13ᵉ arrondissement. Sur une distance de 5 kilomètres, elle serpentait à travers les 13ᵉ et 5ᵉ arrondissements avant de se jeter dans la Seine, à hauteur de la gare d’Austerlitz. Transformée par l’activité humaine en un cours d’eau malodorant, elle fut progressivement canalisée puis enfouie en 1912.</p>
+
+      <h3>Sources bibliographiques</h3>
+
+      <ul class="info-list">
+        <li>Gagneux, R., Anckaert, J., & Conte, G. (2002). <span class="italic">Sur les traces de la Bièvre parisienne : Promenades au fil d’une rivière disparue</span>. Parigramme.</li>
+        <li>Ville de Paris. (2021, 10 mars). <span class="italic">Les secrets enfouis de la Bièvre, rivière parisienne. </span><a href="https://www.paris.fr/pages/les-secrets-enfouis-de-la-bievre-riviere-parisienne-16900" target="_blank">lien</a></li>
+        <li>APUR. (Décembre 2001). <span class="italic">La Bièvre.</span> Agence Parisienne d'Urbanisme. <a href="https://www.apur.org/sites/default/files/documents/40.pdf" target="_blank">lien</a></li>
+        <li>Google. (2026). <span class="italic">Images 360° tirées de Google Maps.</span> <a href="https://www.google.com/maps" target="_blank">lien</a></li>
+        <li>Tracé de la Bièvre issu du regroupement de données (d'après Carthage et rares observations de terrain et film d'Olivier Le Vaillant) <a href="json/bievre.json" target="_blank">(bievre.JSON)</a></li>
+      </ul>
+
+      <div class="info-contact">
+        <h3>Contact</h3>
+        <br>
+        <a href="https://www.linkedin.com/in/gael-maignan/">Gaël Maignan</a>, Février 2026<br>
+        <a href="mailto:contact@gael-maignan.fr">contact@gael-maignan.fr</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    <!-- Modal d'évolution -->
+    <div id="evolutionModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Évolution</h2>
+                <button class="close" aria-label="Fermer">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="side left">
+                    <!--<h3 style="margin-bottom:8px">Aujourd'hui</h3>-->
+                    <iframe id="currentWeb" class="comparison-iframe" src="360.html" title="Vue actuelle" loading="lazy" referrerpolicy="no-referrer"></iframe>
+
+                </div>
+                <div class="side right">
+                    <!--<h3 style="margin-bottom:8px">Archive</h3>-->
+                    <img id="historicalImage" class="comparison-image" src="" alt="Image historique du lieu">
+                    <div id="historicalCaption" class="comparison-caption" role="note" aria-live="polite"></div>
+                    <br>
+                    <div id="explanationText" class="comparison-text"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  function truncateText(html, maxLength = 150) {
+  if (!html) return '';
+
+  // Supprime le HTML pour compter uniquement le texte
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  const text = tmp.textContent || tmp.innerText || '';
+
+  if (text.length <= maxLength) return html;
+
+  return text.slice(0, maxLength).trim() + '…';
+}
+
+/* ===========================
+   Initialisation carte
+   =========================== */
+const map = L.map('map', { center:[48.8434,2.3488], zoom:13, zoomControl:false, attributionControl:false });
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution:'© OpenStreetMap, © CartoDB', maxZoom:19 }).addTo(map);
+
+
+
+// Affichage de la lat et lon de la souris
+const coordBox = document.getElementById('mouse-coords');
+const latEl = document.getElementById('mouse-lat');
+const lngEl = document.getElementById('mouse-lng');
+
+const DECIMALS = 6;
+
+if (!coordBox || !latEl || !lngEl) {
+  console.warn('mouse-coords elements manquants — vérifie que le HTML contient #mouse-coords, #mouse-lat, #mouse-lng');
+} else {
+  // mise à jour lors du mouvement de la souris (Leaflet fournit latlng directement)
+  map.on('mousemove', function(e) {
+    if (!e || !e.latlng) return;
+    latEl.textContent = `Lat: ${Number(e.latlng.lat).toFixed(DECIMALS)}`;
+    lngEl.textContent = `Lon: ${Number(e.latlng.lng).toFixed(DECIMALS)}`;
+  });
+
+  // remettre les tirets quand on quitte la zone de la carte
+  map.on('mouseout', function() {
+    latEl.textContent = 'Lat: —';
+    lngEl.textContent = 'Lon: —';
+  });
+
+  // optionnel : mettre à jour aussi au clic/tap
+  map.on('click', function(e) {
+    if (!e || !e.latlng) return;
+    latEl.textContent = `Lat: ${Number(e.latlng.lat).toFixed(DECIMALS)}`;
+    lngEl.textContent = `Lon: ${Number(e.latlng.lng).toFixed(DECIMALS)}`;
+  });
+}
+
+
+
+
+
+/* ===========================
+   Chargement du tracé depuis un JSON Overpass (bievre.json)
+   Format attendu : l'export Overpass montrant des "elements" de type "way"
+   Chaque way contient "geometry": [{lat, lon}, ...] et éventuellement tags.name / tags.waterway
+   =========================== */
+
+const bievreLayer = L.layerGroup().addTo(map);
+
+// Petit loader visuel (optionnel, discret)
+const loadingEl = document.createElement('div');
+loadingEl.className = 'ui-card';
+loadingEl.style.position = 'absolute';
+loadingEl.style.top = '18px';
+loadingEl.style.right = '18px';
+loadingEl.style.zIndex = 1200;
+loadingEl.style.padding = '8px 10px';
+loadingEl.style.fontSize = '13px';
+loadingEl.textContent = 'Chargement du tracé…';
+loadingEl.setAttribute('aria-hidden','true');
+document.body.appendChild(loadingEl);
+
+function applyFlowingClassesToPath(pathElem, glow = false) {
+  if (!pathElem) return;
+  pathElem.classList.add('flowing-line');
+  if (glow) pathElem.classList.add('glow');
+}
+
+// retry helper: try to add classes when the SVG path exists
+function tryApplyAnimation(poly, glow = false, tries = 6) {
+  const attempt = () => {
+    if (poly._path) {
+      applyFlowingClassesToPath(poly._path, glow);
+      return;
+    }
+    if (tries-- > 0) setTimeout(attempt, 120);
+  };
+  attempt();
+}
+
+// ====== choix automatique de l'URL JSON (local vs production) ======
+const isLocal = location.protocol === 'file:' ||
+                location.hostname === 'localhost' ||
+                location.hostname === '127.0.0.1';
+
+let jsonURL = 'json/bievre.json'; // URL par défaut (production / serveur)
+if (isLocal) {
+  // <--- REMPLACE cette URL par celle que tu veux utiliser en local ---
+  // Par exemple : une copie hébergée sur GitHub raw ou autre hébergement accessible
+  const fallbackJsonUrl = 'https://gael-maignan.fr/bievre-histoire-au-fil-de-l-eau/json/bievre.json';
+  jsonURL = fallbackJsonUrl;
+  console.info('Page lancée en local — utilisation de', jsonURL);
+  // Optionnel : afficher dans l'UI
+  if (loadingEl) loadingEl.textContent = 'Chargement du tracé… (source locale remplacée)';
+}
+
+// fetch and draw
+fetch(jsonURL, { cache: 'no-store' })
+  .then(resp => {
+    if (!resp.ok) throw new Error('Impossible de charger bievre.json — ' + resp.status);
+    return resp.json();
+  })
+  .then(data => {
+    const elements = Array.isArray(data.elements) ? data.elements : [];
+    // Filtre : ways ayant geometry et qui mentionnent la Bièvre ou sont des waterway
+    const candidateWays = elements.filter(e =>
+      e && e.type === 'way' && Array.isArray(e.geometry) &&
+      ( (e.tags && e.tags.name && /bièvre/i.test(e.tags.name)) || (e.tags && e.tags.waterway) )
+    );
+
+    // Si aucun résultat, on essaie un second passage plus permissif (tous les ways avec waterway)
+    const waysToDraw = candidateWays.length ? candidateWays
+      : elements.filter(e => e && e.type === 'way' && Array.isArray(e.geometry) && e.tags && e.tags.waterway);
+
+    if (!waysToDraw.length) {
+      console.warn('Aucun way pertinent trouvé dans bievre.json — fallback au tracé durci');
+      loadingEl.textContent = 'Aucun tracé trouvé dans bievre.json';
+      // Optionnel : on peut garder ton tracé statique en fallback ici (implémenter si tu veux)
+      return;
+    }
+
+    // style options (identiques à ton style existant)
+    const lineOpts = { weight: 4, opacity: 1, interactive: false };
+    const glowOpts = { weight: 8, opacity: 0.15, interactive: false };
+
+    const bounds = L.latLngBounds([]);
+
+    waysToDraw.forEach((way, i) => {
+      // ordre deja présent dans geometry ; Leaflet veut [lat, lng]
+      const coords = way.geometry.map(g => [Number(g.lat), Number(g.lon)]);
+      // ignore geometries trop courtes
+      if (coords.length < 2) return;
+
+      // polyline principale
+      const poly = L.polyline(coords, lineOpts).addTo(bievreLayer);
+
+      // glow (sous la principale)
+      const glow = L.polyline(coords, glowOpts).addTo(bievreLayer);
+
+      // appliquer classes d'animation quand le DOM est prêt (SVG path attaché)
+      tryApplyAnimation(poly, false);
+      tryApplyAnimation(glow, true);
+
+      // étendre les bounds pour fitBounds final
+      bounds.extend(poly.getBounds());
+
+      // optional: popup info from way.tags
+      const name = way.tags && way.tags.name ? way.tags.name : 'Tracé Bièvre';
+      const note = (way.tags && way.tags.note) ? way.tags.note : '';
+      if (note) {
+        const middleIdx = Math.floor(coords.length / 2);
+        const mid = coords[middleIdx];
+        L.circleMarker(mid, { radius: 4, color: '#6D91BA', fillOpacity: 1 }).addTo(bievreLayer)
+          .bindPopup(`<strong>${DOMPurify.sanitize(name)}</strong><br>${DOMPurify.sanitize(String(note))}`, { maxWidth: 320 });
+      }
+    });
+
+    // centrer / zoomer sur l'ensemble si on a des bounds valides
+    if (bounds.isValid()) {
+      map.fitBounds(bounds, { padding: [60, 60] });
+      loadingEl.remove();
+    } else {
+      loadingEl.textContent = 'Tracé chargé — impossible de calculer les limites';
+    }
+  })
+  .catch(err => {
+    console.error('Erreur lors du chargement du tracé:', err);
+    loadingEl.textContent = 'Erreur chargement bievre.json (voir console)';
+  });
+
+// si tu veux regénérer l'animation lors du zoom / ajout de couches
+map.on('zoomend layeradd', function() {
+  bievreLayer.eachLayer(layer => {
+    if (layer instanceof L.Polyline && layer._path) {
+      // assure que la classe est appliquée
+      layer._path.classList.add('flowing-line');
+    }
+  });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ===========================
+   Tracé GEOJSON — Bièvre actuelle
+   - place ce bloc juste avant la section "Données (Archive + Nouvelle Bièvre)"
+   - attend un fichier GeoJSON en "json/bievre_actuelle.geojson" (ajuste le chemin si besoin)
+   =========================== */
+
+const bièvreActuelleGroup = L.layerGroup().addTo(map);
+
+// choix automatique d'URL (même logique que pour bievre.json)
+let geojsonActuelURL = 'json/bievre_actuelle.geojson';
+if (isLocal) {
+  // modifie ici si tu testes en local (ex: raw.githubusercontent...)
+  const fallbackActuel = 'https://gael-maignan.fr/bievre-histoire-au-fil-de-l-eau/json/bievre_actuelle.geojson';
+  geojsonActuelURL = fallbackActuel;
+  console.info('Page en local — utilisation de', geojsonActuelURL);
+}
+
+// récupère la couleur CSS définie dans :root (--water)
+const cssVars = getComputedStyle(document.documentElement);
+const waterColor = (cssVars.getPropertyValue('--water') || '#6D91BA').trim() || '#6D91BA';
+
+// styles (similaires à ton tracé principal)
+const actuelLineStyle = { color: waterColor, weight: 4, opacity: 1, interactive: false };
+const actuelGlowStyle = { color: waterColor, weight: 8, opacity: 0.15, interactive: false };
+
+fetch(geojsonActuelURL, { cache: 'no-store' })
+  .then(resp => {
+    if (!resp.ok) throw new Error('Impossible de charger le GeoJSON actuel — ' + resp.status);
+    return resp.json();
+  })
+  .then(geojson => {
+    // supporte FeatureCollection / Feature / Geometry
+    const geoLayer = L.geoJSON(geojson, {
+      style: () => actuelLineStyle,
+      // si la feature a des propriétés, on crée un popup léger
+      onEachFeature: (feature, layer) => {
+        if (feature && feature.properties) {
+          const title = feature.properties.name ? DOMPurify.sanitize(String(feature.properties.name)) : null;
+          const desc = feature.properties.description ? sanitizeAndPrepareHTML(truncateText(String(feature.properties.description), 220)) : '';
+          if (title || desc) {
+            const popup = `<div class="popup-content">
+                              ${title ? `<h3>${title}</h3>` : ''}
+                              ${desc ? `<div class="popup-description">${desc}</div>` : ''}
+                           </div>`;
+            layer.bindPopup(popup, { maxWidth: 320, className: 'custom-popup' });
+          }
+        }
+      }
+    }).addTo(bievreActuelleGroup);
+
+    // pour chaque polyline générée, on crée une "glow" en dessous et applique les classes CSS d'animation
+    geoLayer.eachLayer(layer => {
+      if (layer instanceof L.Polyline) {
+        // crée la couche de glow (sous la principale)
+        const glow = L.polyline(layer.getLatLngs(), actuelGlowStyle).addTo(bievreActuelleGroup);
+
+        // applique les classes d'animation quand le SVG est prêt (utilise les helpers déjà définis)
+        tryApplyAnimation(layer, false);
+        tryApplyAnimation(glow, true);
+      }
+    });
+
+    // ajoute au contrôle de couches (si tu veux pouvoir l'activer/désactiver)
+    if (typeof L.control.layers === 'function') {
+      // crée (ou récupère) un control.layers global si besoin
+      // si tu veux, supprime la ligne ci-dessous pour ne pas ajouter le control automatiquement
+      L.control.layers(null, { "La Bièvre — aujourd'hui": bievreActuelleGroup }, { collapsed: false, position: 'topright' }).addTo(map);
+    }
+
+    console.info('GeoJSON Bièvre actuelle chargé', geojsonActuelURL);
+  })
+  .catch(err => {
+    console.error('Erreur chargement GeoJSON Bièvre actuelle:', err);
+  });
+
+/* fin tracé Bièvre actuelle */
+
+
+
+/* ===========================
+   Données (Archive + Nouvelle Bièvre)
+   =========================== */
+
+const pointsOfInterest = [
+  { name:"Rue de Bièvre", lat:48.8512472, lng:2.3508398, year:"1833",
+    description:`<p>Vue derrière l’Hôtel-Dieu. </p>`,
+    historicalImage:"images/1.webp", currentImage:"360.html?src=images/1.jpg",
+    legend:"Rue de Bièvre, vue prise derrière l’Hôtel-Dieu à Paris, 31 mars 1833. © Musée Carnavalet /Roger-Viollet"
+  },
+  { name:"Germain Eugène Bonneton, La Bièvre à Gentilly", lat:48.8155114, lng:2.3515953, year:"avant 1909",
+    description:`<p>31 Rue Charles Frérot, 94250 Gentilly — canalisée dès le début du XXe siècle.</p>`,
+    historicalImage:"images/2.webp", currentImage:"360.html?src=images/2.jpg",
+    legend:"Germain Eugène Bonneton (1874-1915), La Bièvre à Gentilly"
+  },
+  { name:"Fabrique de parchemins", lat:48.8225211, lng:2.3473498, year:"1904",
+    description:`<p>48 Rue de la Font à Mulard</p>`,
+    historicalImage:"images/3.webp", currentImage:"360.html?src=images/3.jpg",
+    legend:"La Bièvre à Paris, fabrique de parchemins — 1904. © Georges Remy/Musée Carnavalet/Roger-Viollet"
+  },
+  { name:"Site du Moulin des Prés", lat:48.8243695, lng:2.3543806, year:"",
+    description:`
+    <h3>La Butte-aux-Cailles : d’un quartier ouvrier insalubre à un lieu de mémoire parisien</h3>
+    <p>Longtemps préservée des grands travaux haussmanniens du milieu du XIXᵉ siècle en raison des nombreuses carrières rendant difficiles les fondations d’immeubles de grande hauteur, la Butte-aux-Cailles est restée un quartier ouvrier composé de petits immeubles modestes aux façades de plâtre sans ornement. Les cours intérieures abritaient alors ateliers, manufactures et petites entreprises. Au début du XXᵉ siècle, l’insalubrité y demeure marquée : l’eau potable n’est pas présente dans tous les logements et la surpopulation favorise la propagation de maladies contagieuses, tandis que la Bièvre, devenue un véritable égout à ciel ouvert, est progressivement enterrée. Aujourd’hui, moulins et cours d’eau ont disparu, les usines ont cédé la place à des cafés et des restaurants, mais le quartier conserve de nombreuses traces de son passé, perceptibles au fil de ses rues et de ses places.</p>
+    <p><a href="https://passerelles.essentiels.bnf.fr/fr/chronologie/construction/d35c25f0-01c6-4cf6-9566-00a0ec18906d-piscine-la-butte-aux-cailles/article/122dad9a-aad6-41e4-ac4f-92934c537f48-butte-aux-cailles" target="_blank">https://passerelles.essentiels.bnf.fr/fr/chronologie/construction/d35c25f0-01c6-4cf6-9566-00a0ec18906d-piscine-la-butte-aux-cailles/article/122dad9a-aad6-41e4-ac4f-92934c537f48-butte-aux-cailles</a></p>`,
+    historicalImage:"images/4.webp", currentImage:"360.html?src=images/4.jpg",
+    legend:"Le quartier de la Butte-aux-Cailles | © CC0 Paris Musées / Musée Carnavalet – Histoire de Paris"
+  },
+  { name:"Abbaye de Saint-Victor", lat:48.846389, lng:2.355833, year:"1727",
+    description:``,
+    historicalImage:"images/5.webp", currentImage:"360.html?src=images/5.jpg",
+    legend:"Vue de l’abbaye de Saint-Victor, dans un faubourg de son nom, Jean Marot et Pierre Mariette. Eau-forte, 1727. Paris. © Musée Carnavalet / Roger-Viollet"
+  },
+  { name:"Tannerie rue des Cordelières (13e)", lat:48.8329339, lng:2.3489406, year:"1910",
+    description:``,
+    historicalImage:"images/6.webp", currentImage:"360.html?src=images/6.jpg",
+    legend:"Tannerie rue des Cordelières (13e) en 1910. © Musée Carnavalet / Roger-Viollet"
+  },
+  { name:"La Bièvre, ruelle des Gobelins, actuellement rue Berbier-du-Mets, vers 1920.", lat:48.8336655, lng:2.3516666, year:"vers 1920",
+    description:``,
+    historicalImage:"images/7b.webp", currentImage:"360.html?src=images/7b.jpg",
+    legend:"La Bièvre, ruelle des Gobelins, actuellement rue Berbier-du-Mets, vers 1920. © Albert Harlingue/Roger-Viollet"
+  },
+
+  { name:"38 Rue de la Colonie", lat:48.8244791, lng:2.3475448, year:"",
+    description:``,
+    historicalImage:"images/7.webp", currentImage:"360.html?src=images/7.jpg",
+    legend:"Pan de mur implanté sur le lit même de la rivière"
+  },
+
+  { name:"Bièvre vive et Bièvre morte", lat:48.8300673, lng:2.3468648, year:"vers 1890",
+    description:`<p>Sur la photo prise par Atget, on peut distinguer la Bièvre vive à droite et la Bièvre morte légèrement en contrebas qui par les deux voutes franchissaient l’actuel boulevard Auguste Blanqui (autrefois boulevard d’Italie).</p>`,
+    historicalImage:"images/8.webp", currentImage:"360.html?src=images/8.jpg",
+    legend:"La Bièvre – Bd d’Italie.  Atget – vers 1890 (BnF)"
+  },
+
+  { name:"Bièvre vive et Bièvre morte", lat:48.8351867, lng:2.3504221, year:"1900",
+    description:``,
+    historicalImage:"images/9.webp", currentImage:"360.html?src=images/9.jpg",
+    legend:"La Bièvre ruelle des Gobelins. Atget - mai 1900 (Musée Carnavalet)"
+  },
+
+  { name:"Rue de Bièvre", lat:48.8502977, lng:2.349976, year:"1900",
+    description:``,
+    historicalImage:"images/10.webp", currentImage:"360.html?src=images/10.jpg",
+    legend:"Rue de Bièvre, Atget – 1900 (Musée Carnavalet)"
+  },
+
+  { name:"Viaduc de la Bièvre au passage des Peupliers.", lat:48.8217114, lng:2.3525474, year:"19e-20e siècle",
+    description:`<p>Viaduc de la Bièvre au passage des Peupliers. Inconnu, Musée Carnavalet, Histoire de Paris</p>`,
+    historicalImage:"images/11.webp", currentImage:"360.html?src=images/11.jpg",
+    legend:""
+  },
+
+
+  { name:"Entrée de la Bièvre à Paris", lat:48.820783, lng:2.353961, year:"?",
+    description:`<p></p>`,
+    historicalImage:"images/12.webp", currentImage:"",
+    legend:"Source ?"
+  },
+
+  { name:"La Bièvre au chevet de la chapelle des Gobelins", lat:48.8342906, lng:2.3514313, year:"1823",
+    description:`<p></p>`,
+    historicalImage:"images/13.webp", currentImage:"360.html?src=images/13.jpg",
+    legend:"La Bièvre au chevet de la chapelle des Gobelins 1823 (BNF)"
+  },
+
+  { name:"Usine de la veuve Lanier", lat: 48.8340932, lng: 2.3521972, year:"1885",
+    description:`<p>Localisation incertaine dans la rue</p>`,
+    historicalImage:"images/14.webp", currentImage:"360.html?src=images/14.jpg",
+    legend:"La Bièvre, rue Croulebarbe (Usine de la veuve Lanier), Bahuet, Alfred-Louis, Musée Carnavalet, Histoire de Paris"
+  },
+
+  { name:"Passage Moret nº3, nº17 du plan parcellaire", lat: 48.834768, lng: 2.349952, year:"1910",
+    description:`<p>Passage Moret (Actuelle rue Emile Deslandres)</p>`,
+    historicalImage:"images/15.webp", currentImage:"360.html?src=images/15.jpg",
+    legend:"Passage Moret nº3, nº17 du plan parcellaire, 13ème arrondissement, Paris. Union Photographique Française, photographe"
+  },
+  { name:"La Bièvre au bief du Serrurier", lat: 48.8363517, lng: 2.3486524, year:"entre 1876 et 1900",
+    description:`<p>La Bièvre au bief du Serrurier (près de la rue Saint-Hippolyte), 13ème arrondissement</p>`,
+    historicalImage:"images/16.webp", currentImage:"360.html?src=images/16.jpg",
+    legend:"La Bièvre au bief du Serrurier (près de la rue Saint-Hippolyte), 13ème arrondissement. Casse, E. (Guernesey, 1909, Musée Carnavalet"
+  },
+
+  { name:"La Bièvre au bief de la rue de Valence", lat: 48.837396, lng: 2.349395, year:"1897",
+    description:`<p>Position à vérifier (emplacement à vérifier (tracer de la route ou tracer de la rue ?)).</p>`,
+    historicalImage:"images/17.webp", currentImage:"360.html?src=images/17.jpg",
+    legend:"La Bièvre au bief de la rue de Valence. Schaan, Paul (Saint-Pétersbourg, 1860 - Fontainebleau, 1924). Paris, musée Carnavalet."
+  },
+
+  { name:"", lat: 48.8382688, lng: 2.3508197, year:"1897",
+    description:`<p>La Bièvre au bief de Valence, 5ème arrondissement, Paris.</p>`,
+    historicalImage:"images/18.webp", currentImage:"360.html?src=images/18.jpg",
+    legend:"La Bièvre au bief de Valence, 5ème arrondissement, Paris. Emonts ou Emonds, Pierre"
+  },
+
+  { name:"La Bièvre, bief de la Butte-aux-Cailles", lat: 48.8328842, lng: 2.3512276, year:"1898",
+    description:`<p>La Bièvre, bief de la Butte-aux-Cailles</p>`,
+    historicalImage:"images/19.webp", currentImage:"360.html?src=images/19.jpg",
+    legend:"La Bièvre, bief de la Butte-aux-Cailles, 13ème arrondissement, Paris., Anonyme, photographe (Musée Carnavalet, Histoire de Paris)"
+  },
+
+
+  { name:"Rue de la Fontaine-à-Mulard, quartier Maison Blanche vue depuis la nouvelle rue de Tolbiac, 13ème arrondissement", lat: 48.822973, lng: 2.348510, year:"1884",
+    description:`<p>Autrefois, les deux bras de la Bièvre y dessinaient une zone naturellement sujette aux inondations. Ces étangs et prés innondables entre les 2 brins offraient en hiver des conditions idéales pour la formation de glace. Celle-ci était alors recueillie, puis conservée dans des glacières.</p>`,
+    historicalImage:"images/20.webp", currentImage:"360.html?src=images/20.jpg",
+    legend:"Rue de la Fontaine-à-Mulard, quartier Maison Blanche vue depuis la nouvelle rue de Tolbiac, 13ème arrondissement, Chauvet, Jules-Adolphe (Musée Carnavalet, Histoire de Paris)"
+  },
+  // 21 https://www.parismuseescollections.paris.fr/fr/musee-carnavalet/oeuvres/pont-rue-croulebarbe-a-paris-pl-8#infos-principales
+
+
+   { name:"Quai de lessivage rue Croulebarbe", lat: 48.832074, lng: 2.349911, year:"1865",
+    description:`<p>Quai de lessivage rue Croulebarbe : à la hauteur de la rue des Reculets. Au fond, vers l’amont, le bief Croulebarbe.</p>`,
+    historicalImage:"images/22.webp", currentImage:"360.html?src=images/22.jpg",
+    legend:"Quai de lessivage rue Croulebarbe : à la hauteur de la rue des Reculets. Au fond, vers l’amont, le bief Croulebarbe. (Le Monde illustré, 1865/Coll. R. Gagneux)"
+  },
+
+  { name:"Fin de la Bièvre - Pont sur la rue Corvisart", lat: 48.830940, lng: 2.348046, year:"2e moitié du 19e siècle",
+    description:`<p>Passage sous la rue Corvisart vers l’amont (bief des Cordelières). Le lit de la Bièvre est déjà asséché.</p>`,
+    historicalImage:"images/23.webp", currentImage:"360.html?src=images/23.jpg",
+    legend:"Inconnu, Musée Carnavalet, Histoire de Paris"
+  },
+
+  { name:"Maison de l'abbé de Choisy", lat: 48.830298, lng: 2.347139, year:"1980",
+    description:`<p>Ancienne demeure de l'abbé de Choisy, située sur le boulevard d’Italie (aujourd’hui boulevard Auguste-Blanqui). À gauche, on distingue le lit partiellement comblé de la Bièvre vive</p>`,
+    historicalImage:"images/24.webp", currentImage:"360.html?src=images/24.jpg",
+    legend:""
+  },
+
+  { name:"Fin de la Bièvre Cabaret de Madame Grégoire", lat: 48.832279, lng: 2.350562, year:"vers 1900",
+    description:`<p>À droite le cabaret de Madame Grégoire, à gauche, on peut apercevoir une palissade derrière laquelle se trouvent les travaux de remblayage de la Bièvre vive.</p>`,
+    historicalImage:"images/25.webp", currentImage:"360.html",
+    legend:""
+  },
+
+   { name:"Bief Santeuil (avant et après) sa supression", lat: 48.8407594, lng: 2.3565953, year:"19e-20e",
+    description:`<p>La Bièvre, bief Santeuil, 13ème arrondissement, Paris, 19e-20e, Musée Carnavalet, Histoire de Paris</p>
+    <br>
+    <img src="images/26.webp" alt="Le bief Santeuil en direction de l’aval après sa suppression (voir p. 38, le bief « en eau »). À l’arrière-plan, la maison correspondant à l’actuel 32, rue Geoffroy-Saint-Hilaire. (Paris-Assainissement / cliché Ben Loulou)"></img>`,
+    historicalImage:"images/26b.webp", currentImage:"360.html",
+    legend:"La Bièvre, bief Santeuil, 13ème arrondissement, Paris, 19e-20e, Musée Carnavalet, Histoire de Paris"
   }
 
-    /* Contenu */
-    .cta-content {
-      position: relative;
-      z-index: 2;
-      width: 90%;
-      max-width: 1100px;
-      margin: auto;
-    }
 
+];
 
-    .cta-content h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-    }
+const nouvelleBievre = [
+  { name: "Renaissance de la Bièvre", lat: 48.8051848, lng: 2.3401736, year: "2022",
+    description: "<p>Depuis mars 2022, la Bièvre coule de nouveau sur un tronçon de 600 mètres entre Arcueil et Gentilly (le long de l’avenue François Vincent-Raspail et de la rue de la Division du Général Leclerc à Arcueil). Les arbres et la végétation qui bordent ce cours d’eau participent à la diversification de la faune et la protection de cet espace naturel.</p><p>66 Rue de la Division du Général Leclerc</p>",
+    resourceUrl: "https://www.arcueil.fr/la-ville/nos-politiques-publiques/transition-ecologique/nature-en-ville/",
+    thumbnail: "images/n1.webp",
+    legend: "Crédit photo : arcueil.fr",
+    currentImage:"360.html?src=images/n1.jpg",
+  },
+];
 
-    .cta-content p {
-      /*margin-bottom: 2rem;*/
-    }
+/* Registry pour retrouver les items depuis un popup (sourceKey -> tableau) */
+const markerRegistry = {
+  archive: pointsOfInterest,
+  nouvelle: nouvelleBievre
+};
 
-    /* Mobile */
-    @media (max-width: 768px) {
-      .cta-section {
-        padding: 0.5rem;
-        padding-top: 2rem;
-        padding-bottom: 2rem;
+/* ===========================
+   Utilitaires icône / DOMPurify
+   =========================== */
+
+// Small helper: hex -> rgba
+function hexToRgba(hex, alpha = 0.25) {
+  if (!hex) return `rgba(0,0,0,${alpha})`;
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16);
+  const g = parseInt(h.substring(2,4),16);
+  const b = parseInt(h.substring(4,6),16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// Unified pulsing divIcon (color param)
+function createPulsingIcon(color = '#f39c12', size = 28) {
+  const pulseBg = hexToRgba(color, 0.25);
+  const dotSize = Math.round(size * 0.43);
+  const html = `
+    <div class="custom-marker" style="width:${size}px;height:${size}px;position:relative;">
+      <div class="pulse" aria-hidden="true"
+           style="width:${size}px;height:${size}px;border-radius:50%;background:${pulseBg};animation:pulse 2s infinite;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);"></div>
+      <div class="dot" role="img" aria-label="Point d'intérêt"
+           style="width:${dotSize}px;height:${dotSize}px;border-radius:50%;background:${color};border:2px solid #fff;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);box-shadow:0 2px 8px ${hexToRgba(color, 0.6)};"></div>
+    </div>
+  `;
+  return L.divIcon({ className:'', html, iconSize:[size,size], iconAnchor:[Math.round(size/2), Math.round(size/2)] });
+}
+
+// sanitize + safe links (DOMPurify global)
+function sanitizeAndPrepareHTML(rawHtml) {
+  if (!rawHtml) return '';
+  // autorise quelques attributs utiles pour les images
+  const clean = DOMPurify.sanitize(rawHtml, {
+    ALLOWED_TAGS: ['h1','h2','h3','h4','h5','h6','a','b','i','em','strong','u','p','br','ul','ol','li','img','figure','figcaption','small'],
+    ALLOWED_ATTR: ['href','target','rel','src','alt','title','width','height','loading','decoding','srcset']
+  });
+
+  const tmp = document.createElement('div');
+  tmp.innerHTML = clean;
+
+  // liens : ouverture sécurisée
+  tmp.querySelectorAll('a').forEach(a => {
+    if (!a.getAttribute('target')) a.setAttribute('target','_blank');
+    a.setAttribute('rel','noopener noreferrer');
+  });
+
+  // images : lazy, classes, wrap figure + figcaption si alt present
+  tmp.querySelectorAll('img').forEach(img => {
+    // attributs pour perf / accessibilité
+    if (!img.getAttribute('loading')) img.setAttribute('loading','lazy');
+    if (!img.getAttribute('decoding')) img.setAttribute('decoding','async');
+    if (!img.getAttribute('alt')) img.setAttribute('alt','Image historique');
+
+    img.classList.add('archive-photo'); // applique le style d'archive
+
+    // Si l'image n'est déjà pas dans une <figure>, on la wrappe
+    if (!img.closest('figure')) {
+      const fig = document.createElement('figure');
+      fig.className = 'archive-figure';
+
+      const parent = img.parentNode;
+      parent.replaceChild(fig, img);
+      fig.appendChild(img);
+
+      // figcaption : si alt existe et n'est pas vide
+      const alt = img.getAttribute('alt') || '';
+      if (alt.trim()) {
+        const fc = document.createElement('figcaption');
+        fc.className = 'archive-figcaption';
+        fc.textContent = alt;
+        fig.appendChild(fc);
+      }
+    } else {
+      // si déjà en figure, on s'assure que la figure a la bonne classe
+      const figure = img.closest('figure');
+      if (figure && !figure.classList.contains('archive-figure')) {
+        figure.classList.add('archive-figure');
       }
     }
-  </style>
-  <style>
-          .button {
-            color: white;
-            transition: background-color 0.3s ease;
-            background-color: #0A1236;
-          }
-          .button:hover {
-            background-color: rgba(116,157,163,1);
-          }
-        </style>
-
-
-<!-- Sections : pour chaque section mets la variable --bg en inline style -->
-<section class="cta-section" style="--bg: url('images/athens-urban-observations-archive.webp');" data-once="true">
-  <div class="cta-content">
-    <article class="relative p-4 rounded-lg shadow shadow-lg article">
-      <h3 class="font-semibold text-2xl">Athens Urban Observations Archive :
-An Online Ethnographic and Urban Repository on Athenian Spaces in Transition</h3>
-      <p class="mt-2 pr-12">The project aims to create a collaborative online archive documenting subtle, overlooked, or transitional spaces of Athens. It blends urban studies, ethnography, visual culture, and citizen contributions to build a living memory of the city’s informal, contested, or reappropriated places.</p>
-      <a href="https://athens-urban-observations-archive.pages.dev/" target="_blank" class="absolute bottom-4 right-4 w-9 h-9 flex items-center justify-center rounded-full button"><svg xmlns="https://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg></a>
-    </article>
-  </div>
-</section>
-
-<section class="cta-section" style="--bg: url('images/le-jour-des-13-heures.webp');" data-once="true">
-  <div class="cta-content">
-    <article class="relative p-4 rounded-lg shadow shadow-lg article">
-      <h3 class="font-semibold text-2xl">Le Jour des 13 heures — Film Documentaire</h3>
-      <p class="mt-2 pr-12">Athènes, 1ᵉʳ octobre 2025. La Grèce vit au ralenti : syndicats et travailleurs observent une grève générale contre la réforme autorisant des journées de travail de treize heures.<br>Ce film suit une journée de rassemblements et de voix qui résonnent place Syntagma.</p>
-      <a href="https://sous-les-titres.fr/films/le%20jour%20des%2013%20heures/le%20jour%20des%2013%20heures.html" target="_blank" class="absolute bottom-4 right-4 w-9 h-9 flex items-center justify-center rounded-full button"><svg xmlns="https://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg></a>
-    </article>
-  </div>
-</section>
-
-<section class="cta-section" style="--bg: url('images/ville sonore.webp');" data-once="true">
-  <div class="cta-content">
-    <article class="relative p-4 rounded-lg shadow shadow-lg article">
-      <h3 class="font-semibold text-2xl">La Ville Sonore : Enregistrer et cartographier la mémoire sonore des rues</h3>
-      <p class="mt-2 pr-12">La ville parle, mais rarement on l’écoute. Ses voix se mêlent, se superposent, se perdent parfois dans le bruit de fond de notre quotidien, elles composent une partition vivante, à la fois banale et unique, qui disparaît souvent sans laisser de trace.</p>
-      <a href="https://ville-sonore.fr/" target="_blank" class="absolute bottom-4 right-4 w-9 h-9 flex items-center justify-center rounded-full button"><svg xmlns="https://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg></a>
-    </article>
-  </div>
-</section>
-
-<section class="concorde-section" data-text="Urbanisme Sensible" id="urbanisme">
-  <svg class="letters-svg" preserveAspectRatio="none" aria-hidden="true"></svg>
-
-  <div class="concorde-overlay" role="region" aria-label="Texte d'accroche">
-    <div class="backdrop" aria-hidden="true"></div>
-    <div class="content">
-      <h2 class="title">Urbanisme sensible</h2>
-      <p>Au-delà des plans et des normes, il s’agit d’appréhender les villes comme des lieux vécus, porteurs de mémoire, de récits, de tensions et d’émotions.</p>
-    </div>
-  </div>
-</section>
-
-
-<section class="cta-section" style="--bg: url('images/urbanivore.webp');" data-once="true">
-  <div class="cta-content">
-    <article class="relative p-4 rounded-lg shadow shadow-lg article">
-      <h3 class="font-semibold text-2xl">Urbanivore</h3>
-      <p class="mt-2 pr-12">Urbanivore est un projet visant à révéler le potentiel nourricier de nos métropoles en cartographiant les arbres comestibles accessibles dans l'espace public. Grâce aux données en Open Data et à une base de plus de 100 recettes associées à chaque essence, chacun peut réapprendre à cueillir, transformer, goûter… et mieux habiter sa ville.</p>
-      <a href="https://urbanivore.fr/" target="_blank" class="absolute bottom-4 right-4 w-9 h-9 flex items-center justify-center rounded-full button"><svg xmlns="https://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg></a>
-    </article>
-  </div>
-</section>
-
-<section class="cta-section" style="--bg: url('images/photographie.webp');" data-once="true">
-  <div class="cta-content">
-    <article class="relative p-4 rounded-lg shadow shadow-lg article">
-      <h3 class="font-semibold text-2xl">Photographie</h3>
-      <p class="mt-2 pr-12">Je photographie la ville comme on observe un corps en mouvement. Belleville, Paris, ou ailleurs, chaque rue, chaque fissure, chaque façade raconte une histoire. Mon regard se pose sur les interstices : là où le béton respire, où la lumière casse la routine.</p>
-      <a href="https://gael-maignan-photographe.fr/" target="_blank" class="absolute bottom-4 right-4 w-9 h-9 flex items-center justify-center rounded-full button"><svg xmlns="https://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg></a>
-    </article>
-  </div>
-</section>
-
-
-<section class="cta-section" style="--bg: url('images/villevecue.webp');" data-once="true">
-  <div class="cta-content">
-    <article class="relative p-4 rounded-lg shadow shadow-lg article">
-      <h3 class="font-semibold text-2xl">Association Ville Vécue</h3>
-      <p class="mt-2 pr-12">
-Ville Vécue est une association citoyenne qui promeut la diversité et l’inclusion dans l’espace public. Composée d’étudiant·e·s en urbanisme, ingénierie et santé, l’association mêle réflexion, témoignages et actions concrètes pour repenser la ville afin qu’elle soit praticable par toutes et tous.</p>
-      <a href="https://villevecue.fr/" target="_blank" class="absolute bottom-4 right-4 w-9 h-9 flex items-center justify-center rounded-full button"><svg xmlns="https://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg></a>
-    </article>
-  </div>
-</section>
-
-
-
-<section class="concorde-section" data-text="Écriture" id="ecriture">
-  <svg class="letters-svg" preserveAspectRatio="none" aria-hidden="true"></svg>
-
-  <div class="concorde-overlay" role="region" aria-label="Texte d'accroche">
-    <div class="backdrop" aria-hidden="true"></div>
-    <div class="content">
-      <h2 class="title">Écriture</h2>
-      <p>Poèmes, essais, récits sensibles. L’écriture comme acte de résistance douce, de mise en lumière, de tissage entre mémoire et imaginaire.</p>
-    </div>
-  </div>
-</section>
-
-
-<section class="cta-section" style="--bg: url('images/poete a grande vitesse.png');" data-once="true">
-  <div class="cta-content">
-    <article class="relative p-4 rounded-lg shadow shadow-lg article">
-      <h3 class="font-semibold text-2xl">Poète à grande vitesse</h3>
-      <p class="mt-2 pr-12">Entre prose poétique, souffle intime et paysages traversés, ce podcast est une invitation au voyage intérieur, au rythme des rails.</p>
-      <a href="https://open.spotify.com/show/0Udl5cVGssaXkZuAj9hXy7" target="_blank" class="absolute bottom-4 right-4 w-9 h-9 flex items-center justify-center rounded-full button"><svg xmlns="https://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg></a>
-    </article>
-  </div>
-</section>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <style>
-    :root{
-      --section-height-lab: 60vh;
-      --overlay-color-lab: rgba(111,150,156,0.8); /* teinte au-dessus de l'image pour lisibilité */
-      --text-color-lab: #F2F2F2;
-      --blur-radius: 4px;
-      --bg-image: url('images/lab.png'); /* remplace par ton image */
-    }
-
-    /* Section principale */
-    .hero-lab {
-      position: relative;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-    }
-
-    /* Image de fond floutée via pseudo-élément */
-    .hero-lab::before{
-      content: "";
-      position: absolute;
-      inset: 0; /* top:0; right:0; bottom:0; left:0 */
-      background-image: var(--bg-image);
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-
-      /* on agrandit légèrement pour compenser le recadrage dû au flou */
-      transform: scale(1.05);
-
-      /* le flou visuel */
-      filter: blur(var(--blur-radius));
-      z-index: 0;
-      will-change: transform, filter;
-    }
-
-    /* Superposition (overlay) sombre pour contraster le texte */
-    .hero-lab::after{
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: var(--overlay-color-lab);
-      z-index: 1;
-    }
-
-    /* Contenu placé au-dessus */
-    .hero-lab__content{
-      color: var(--text-color-lab);
-      position: relative; /* au-dessus des pseudo-éléments */
-      z-index: 2;
-      padding: clamp(2rem, 3vw, 2.5rem) 0;
-
-      max-width: 1100px;
-      width: 90%;
-    }
-
-    .hero-lab__title{
-      font-size: clamp(1.4rem, 4vw, 2.8rem);
-      line-height: 1.05;
-      letter-spacing: -0.02em;
-      text-shadow: 0 6px 18px rgba(0,0,0,0.45);
-    }
-
-    .hero-lab__subtitle{
-      margin: 0;
-      font-size: clamp(.95rem, 2.2vw, 1.2rem);
-      margin-inline: auto;
-    }
-
-
-    /* Amélioration : pour les navigateurs qui ne supportent pas filter sur pseudo (très rare) */
-    @supports not (filter: blur(1px)) {
-      .hero-lab::before {
-        filter: none;
-        transform: none;
-        opacity: .65;
-      }
-    }
-
-    /* Responsive: réduire la hauteur sur très petits écrans */
-
-  </style>
-    <section class="hero-lab" aria-labelledby="hero-lab-title" id="contact">
-      <div class="hero-lab__content">
-        <h2 id="hero-lab-title" class="title">Contact</h2>
-        <p class="hero-lab__subtitle">Vous souhaitez en savoir plus sur mon travail ou souhaitez collaborer sur un projet créatif ? Je suis toujours ouvert aux échanges, expositions ou partenariats. N’hésitez pas à me contacter !</p>
-        <p class="hero-lab__subtitle"><br>Vous pouvez me contacter à l'adresse : <strong><a href="mailto:contact@gael-maignan.fr">contact@gael-maignan.fr</a></strong></p>
-        <!--<a href="#services" class="btn" role="button">Nous contacter</a>-->
-
-        <p><br>Réseaux : <a href="https://www.linkedin.com/in/gael-maignan/" target="_blank">Linkedin</a> | <a href="https://www.instagram.com/gael.maignan" target="_blank">Instagram</a> | <a href="https://www.artistescontemporains.org/artistes/51098/" target="_blank">Artistes Contemporains</a><br>Notices : <a href="https://www.wikidata.org/wiki/Q134520089" target="_blank">Wikidata</a> | <a href="https://www.imdb.com/fr/name/nm17304284" target="_blank">IMDb</a> | <a href="https://mubi.com/fr/cast/gael-maignan" target="_blank">MUBI</a> | <a href="https://www.film-documentaire.fr/4DACTION/w_liste_generique/C_157870_F" target="_blank">film-documentaire.fr</a> | <a href="https://www.allocine.fr/personne/fichepersonne_gen_cpersonne=1000062326.html" target="_blank">AlloCiné</a></p>
+  });
+
+  return tmp.innerHTML;
+}
+
+
+/* ===========================
+   Ajout des marqueurs (générique)
+   - sourceKey: clé dans markerRegistry (ex: 'archive' | 'nouvelle')
+   - opts: { color, size, showThumbnailInPopup (bool) }
+   =========================== */
+function addMarkers(dataArray, opts = {}, sourceKey = 'archive') {
+  const color = opts.color || (sourceKey === 'nouvelle' ? '#2ecc71' : '#f39c12');
+  const size = opts.size || 28;
+  const showThumb = opts.showThumbnailInPopup || false;
+
+  const icon = createPulsingIcon(color, size);
+
+  dataArray.forEach((item, idx) => {
+    const marker = L.marker([item.lat, item.lng], { icon }).addTo(map);
+
+    // Build sanitized popup HTML
+    const safeDesc = sanitizeAndPrepareHTML(truncateText(item.description || '', 150));
+
+    const safeLegend = sanitizeAndPrepareHTML(item.legend || '');
+    const thumbHtml = showThumb ? (item.thumbnail ? `<img class="popup-thumb" src="${item.thumbnail}" alt="${item.name}">` : '') : (item.historicalImage ? `<img class="popup-thumb" src="${item.historicalImage}" alt="Archive — ${item.name}">` : '');
+
+    // We store sourceKey + idx in the button dataset so the runtime handler can find the item
+    const popupHTML = `
+      <div class="popup-content">
+        <h3>${item.name}</h3>
+        <p><strong>Date:</strong> ${item.year || ''}</p>
+        ${thumbHtml}
+        <div class="popup-caption">${safeLegend}</div>
+        ${sourceKey === 'nouvelle' ? `<div class="popup-description">${safeDesc}</div>` : ''}
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:6px;">
+          ${sourceKey === 'archive' || item.currentImage ? `<button class="btn-evolution" data-source="${sourceKey}" data-idx="${idx}" type="button" aria-label="Voir l'évolution de ${item.name}">Voir l'évolution</button>` : ''}
+          ${item.resourceUrl ? `<a class="btn-evolution" href="${item.resourceUrl}" target="_blank" rel="noopener noreferrer" aria-label="En savoir plus sur ${item.name}">En savoir plus</a>` : ''}
+        </div>
       </div>
-    </section>
+    `;
 
+    // bind sanitized HTML string (Leaflet accepte string or DOM node)
+    marker.bindPopup(popupHTML, { maxWidth:320, className:'custom-popup' });
+  });
+}
 
+/* Ajout des marqueurs pour les deux jeux de données (une seule fois chacun) */
+addMarkers(pointsOfInterest, { color: '#f39c12', size:28, showThumbnailInPopup:false }, 'archive');
+addMarkers(nouvelleBievre, { color: '#2ecc71', size:28, showThumbnailInPopup:true }, 'nouvelle');
 
+/* ===========================
+   Gestion unique des popups -> bouton "Voir l'évolution"
+   =========================== */
+const evolutionModal = document.getElementById('evolutionModal');
+const modalTitle = document.getElementById('modalTitle');
+const currentIframe = document.getElementById('currentWeb');
+const historicalImage = document.getElementById('historicalImage');
+const historicalCaptionEl = document.getElementById('historicalCaption');
+const explanationEl = document.getElementById('explanationText');
+const evolutionCloseBtn = evolutionModal.querySelector('.close');
 
+function showEvolution(title, currentImg, historicalImg, legend, explanation) {
+  modalTitle.textContent = title || '';
+  currentIframe.src = currentImg || '360.html';
+  historicalImage.src = historicalImg || '';
+  historicalCaptionEl.innerHTML = legend ? sanitizeAndPrepareHTML(legend) : '';
+  explanationEl.innerHTML = explanation ? sanitizeAndPrepareHTML(explanation) : '';
 
+  evolutionModal.classList.add('open');
+  evolutionModal.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+  evolutionCloseBtn.focus();
+}
 
+function closeEvolutionModal(){
+  evolutionModal.classList.remove('open');
+  evolutionModal.setAttribute('aria-hidden','true');
+  document.body.style.overflow = '';
+  // Optional: stop iframe by resetting src if you want
+  // currentIframe.src = 'about:blank';
+}
 
+/* Single popupopen listener (remplace les multiples handlers) */
+map.on('popupopen', function(e){
+  const node = e.popup._contentNode;
+  if (!node) return;
 
+  const btn = node.querySelector('.btn-evolution');
+  if (!btn) return;
 
+  // ensure we don't accumulate handlers: replace onclick
+  btn.onclick = function(){
+    const source = btn.dataset.source || 'archive';
+    const idx = Number(btn.dataset.idx);
+    const registry = markerRegistry[source];
+    const item = (registry && registry[idx]) ? registry[idx] : null;
+    if (item) {
+      // prefer currentImage (iframe) for archive, resourceUrl for nouvelle if no iframe
+      const currentImg = item.currentImage || item.resourceUrl || '360.html';
+      const historicalImg = item.historicalImage || item.thumbnail || '';
+      showEvolution(item.name, currentImg, historicalImg, item.legend || '', item.description || '');
+    } else {
+      // fallback: if the popup contains a link, follow it
+      const anchor = node.querySelector('a[role="button"][href]');
+      if (anchor) anchor.click();
+    }
+  };
+});
 
+/* Modal close events */
+if (evolutionCloseBtn) evolutionCloseBtn.addEventListener('click', closeEvolutionModal);
+evolutionModal.addEventListener('click', (e) => { if (e.target === evolutionModal) closeEvolutionModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && evolutionModal.classList.contains('open')) closeEvolutionModal(); });
 
+/* ===========================
+   Info modal (inchangé mais harmonisé)
+   =========================== */
+let _lastFocusedElement = null;
+const infoButtonEl = document.getElementById('infoButton');
+const infoModalEl = document.getElementById('infoModal');
+const infoCloseBtn = infoModalEl.querySelector('.close');
 
+function openInfoModal() {
+  _lastFocusedElement = document.activeElement;
+  infoModalEl.classList.add('open');
+  infoModalEl.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+  infoCloseBtn.focus();
+  trapFocusInModal(infoModalEl);
+}
+function closeInfoModal() {
+  infoModalEl.classList.remove('open');
+  infoModalEl.setAttribute('aria-hidden','true');
+  document.body.style.overflow = '';
+  if (_lastFocusedElement) _lastFocusedElement.focus();
+}
+infoButtonEl.addEventListener('click', openInfoModal);
+infoButtonEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openInfoModal(); }});
+infoCloseBtn.addEventListener('click', closeInfoModal);
+infoModalEl.addEventListener('click', (e) => { if (e.target === infoModalEl) closeInfoModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && infoModalEl.classList.contains('open')) closeInfoModal(); });
 
-  </main>
-
-  <script src="js/index.js"></script>
-
-
-
-
-  <footer>
-  <p>&copy; <span id="year"></span> — Tous droits réservés.</p>
-</footer>
-
-
+function trapFocusInModal(modal) {
+  const focusableSelector = 'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])';
+  const focusable = Array.from(modal.querySelectorAll(focusableSelector));
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  function handleTrap(e) {
+    if (e.key !== 'Tab') return;
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  }
+  modal.addEventListener('keydown', handleTrap);
+  const observer = new MutationObserver(() => {
+    if (!modal.classList.contains('open')) {
+      modal.removeEventListener('keydown', handleTrap);
+      observer.disconnect();
+    }
+  });
+  observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
+}
+</script>
 
 </body>
 </html>
-
-
-
