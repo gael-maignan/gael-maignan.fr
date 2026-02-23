@@ -20,6 +20,7 @@
   --marker-color: #f39c12;
   --new-marker: #2ecc71;
   --water: #6D91BA;
+  --water2: rgba(46,204,113,0.65);
   --ui-bg: rgba(255,255,255,0.95);
   --card-radius: 10px;
   --card-shadow: 0 6px 18px rgba(0,0,0,0.12);
@@ -103,6 +104,20 @@ h3{font-size:16px;padding-bottom:5px;}
     rgba(109,145,186,0.4) 0%,
     rgba(109,145,186,1) 50%,
     rgba(109,145,186,0.4) 100%
+  );
+  background-size: 200% 100%;
+  animation: legend-flow 1.6s linear infinite;
+  box-shadow: 0 0 6px rgba(46,134,193,0.25);
+}
+.legend-line2{
+  width:34px;
+  height:4px;
+  border-radius:2px;
+  background: linear-gradient(
+    90deg,
+    rgba(46,204,113,0.4) 0%,
+    rgba(46,204,113,1) 50%,
+    rgba(46,204,113,0.4) 100%
   );
   background-size: 200% 100%;
   animation: legend-flow 1.6s linear infinite;
@@ -315,7 +330,7 @@ h3{font-size:16px;padding-bottom:5px;}
 /* ===== Tracé actuel (pointillés animés — couleur différente) ===== */
 .flowing-line.actuel {
   /* la classe 'flowing-line' contient déjà stroke-dasharray et l'animation */
-  stroke: var(--new-marker);          /* couleur différente pour le tracé actuel */
+  stroke: var(--water2);          /* couleur différente pour le tracé actuel */
   stroke-width: 4;
   stroke-linecap: round;
   stroke-opacity: 0.96;
@@ -324,7 +339,7 @@ h3{font-size:16px;padding-bottom:5px;}
 
 /* glow (sous-jacent) pour le tracé actuel */
 .flowing-line.glow.actuel {
-  stroke: var(--new-marker);
+  stroke: var(--water2);
   stroke-width: 8;
   stroke-opacity: 0.12;
   filter: blur(6px);
@@ -493,7 +508,8 @@ h3{font-size:16px;padding-bottom:5px;}
         <div class="legend-item"><div class="legend-marker" style="--legend-color: var(--marker-color)"></div>Archive</div>
         <div class="legend-item"><div class="legend-marker" style="--legend-color: var(--new-marker)"></div>La Bièvre aujourd'hui</div>
 
-        <div class="legend-item"><div class="legend-line"></div><div>Tracé de la Bièvre</div></div>
+        <div class="legend-item"><div class="legend-line"></div><div>Tracé historique de la Bièvre</div></div>
+        <div class="legend-item"><div class="legend-line2"></div><div>Tracé actuel de la Bièvre</div></div>
     </div>
 
     <!-- Bouton d'information (page-level) -->
@@ -880,11 +896,6 @@ fetch(geojsonActuelURL, { cache: 'no-store' })
       console.info('GeoJSON Bièvre actuelle dessiné et centrée.', geojsonActuelURL);
     } else {
       console.info('GeoJSON Bièvre actuelle chargé mais impossible de calculer les limites (bounds invalides).');
-    }
-
-    // ajout control.layers si souhaité (groupe déjà ajouté)
-    if (typeof L.control.layers === 'function') {
-      L.control.layers(null, { "La Bièvre — aujourd'hui": bievreActuelleGroup }, { collapsed: false, position: 'topright' }).addTo(map);
     }
   })
   .catch(err => {
