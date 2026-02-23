@@ -4,7 +4,7 @@
   // === Config ===
   const AVAILABLE_LANGS = ['en', 'fr'];
   const FLAG_ICONS = {
-    en: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" role="img" aria-labelledby="title desc">
+    en: `<svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 60 30" role="img" aria-labelledby="title desc">
   <title id="title">Union Flag (United Kingdom)</title>
   <desc id="desc">Union Jack: blue field with white and red crosses and saltires</desc>
 
@@ -36,8 +36,8 @@
   </g>
 </svg>
 `,
-    fr: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="1" height="2" x="0" fill="#0055A4"/><rect width="1" height="2" x="1" fill="#fff"/><rect width="1" height="2" x="2" fill="#EF4135"/></svg>`,
-    gk: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 27 18" role="img" aria-labelledby="title desc">
+    fr: `<svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="1" height="2" x="0" fill="#0055A4"/><rect width="1" height="2" x="1" fill="#fff"/><rect width="1" height="2" x="2" fill="#EF4135"/></svg>`,
+    gk: `<svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 27 18" role="img" aria-labelledby="title desc">
   <title id="title">Drapeau de la Grèce</title>
   <desc id="desc">Neuf bandes horizontales bleu et blanc avec un canton bleu portant une croix blanche</desc>
 
