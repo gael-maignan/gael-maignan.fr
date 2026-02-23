@@ -312,6 +312,23 @@ h3{font-size:16px;padding-bottom:5px;}
 .flowing-line{stroke:var(--water);stroke-width:4;stroke-linecap:round;stroke-opacity:0.95;filter:drop-shadow(0 0 6px rgba(46,134,193,0.3));stroke-dasharray:12 8;animation:dash 1.6s linear infinite;}
 .flowing-line.glow{stroke:var(--water);stroke-width:8;stroke-opacity:0.14;filter:blur(6px);}
 @keyframes dash{to{stroke-dashoffset:-40;}}
+/* ===== Tracé actuel (pointillés animés — couleur différente) ===== */
+.flowing-line.actuel {
+  /* la classe 'flowing-line' contient déjà stroke-dasharray et l'animation */
+  stroke: var(--new-marker);          /* couleur différente pour le tracé actuel */
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-opacity: 0.96;
+  filter: drop-shadow(0 0 6px rgba(46,134,193,0.18));
+}
+
+/* glow (sous-jacent) pour le tracé actuel */
+.flowing-line.glow.actuel {
+  stroke: var(--new-marker);
+  stroke-width: 8;
+  stroke-opacity: 0.12;
+  filter: blur(6px);
+}
 
 /* Leaflet controls and popup font enforcement */
 .leaflet-control-container{z-index:1200;}
@@ -741,6 +758,147 @@ map.on('zoomend layeradd', function() {
     }
   });
 });
+
+
+
+
+
+
+/* ===========================
+   Tracé GEOJSON — Bièvre actuelle
+   (gère LineString / MultiLineString / Point -> on relie les points en polyline)
+   =========================== */
+
+const bievreActuelleGroup = L.layerGroup().addTo(map);
+
+// choix automatique d'URL (même logique que pour bievre.json)
+let geojsonActuelURL = 'json/bievre_actuelle.geojson';
+if (isLocal) {
+  const fallbackActuel = 'https://gael-maignan.fr/bievre-histoire-au-fil-de-l-eau/json/bievre_actuelle.geojson';
+  geojsonActuelURL = fallbackActuel;
+  console.info('Page en local — utilisation de', geojsonActuelURL);
+}
+
+// Styles : on préfère laisser la couleur / dash via CSS (classes) pour garder l'animation
+const strokeOpts = { weight: 4, opacity: 1, interactive: false, className: 'flowing-line actuel' };
+const glowOpts   = { weight: 8, opacity: 0.15, interactive: false, className: 'flowing-line glow actuel' };
+
+fetch(geojsonActuelURL, { cache: 'no-store' })
+  .then(resp => {
+    if (!resp.ok) throw new Error('Impossible de charger le GeoJSON actuel — ' + resp.status);
+    return resp.json();
+  })
+  .then(geojson => {
+    // normaliser en tableau de features
+    const features = (geojson && geojson.type === 'FeatureCollection') ? (geojson.features || []) :
+                     (geojson && geojson.type === 'Feature') ? [geojson] :
+                     // cas d'une geometry ou d'un objet brut
+                     (geojson && geojson.geometry && geojson.properties) ? [geojson] : [];
+
+    // séparer par type de géométrie
+    const pointFeatures = features.filter(f => f.geometry && f.geometry.type === 'Point');
+    const lineFeatures  = features.filter(f => f.geometry && (f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString'));
+
+    const bounds = L.latLngBounds([]);
+
+    // 1) Si on a des LineString / MultiLineString -> on les dessine avec L.geoJSON (préserve popups)
+    if (lineFeatures.length) {
+      const lineCollection = { type: 'FeatureCollection', features: lineFeatures };
+      const geoLayer = L.geoJSON(lineCollection, {
+        style: () => ({ ...strokeOpts }), // applique la classe 'flowing-line actuel'
+        onEachFeature: (feature, layer) => {
+          if (feature && feature.properties) {
+            const title = feature.properties.name ? DOMPurify.sanitize(String(feature.properties.name)) : null;
+            const desc  = feature.properties.description ? sanitizeAndPrepareHTML(truncateText(String(feature.properties.description), 220)) : '';
+            if (title || desc) {
+              const popup = `<div class="popup-content">
+                                ${title ? `<h3>${title}</h3>` : ''}
+                                ${desc ? `<div class="popup-description">${desc}</div>` : ''}
+                             </div>`;
+              layer.bindPopup(popup, { maxWidth: 320, className: 'custom-popup' });
+            }
+          }
+        }
+      }).addTo(bievreActuelleGroup);
+
+      // pour chaque polyline, ajouter une couche "glow" en dessous et appliquer l'animation
+      geoLayer.eachLayer(layer => {
+        if (layer instanceof L.Polyline) {
+          const glow = L.polyline(layer.getLatLngs(), glowOpts).addTo(bievreActuelleGroup);
+          tryApplyAnimation(layer, false);
+          tryApplyAnimation(glow, true);
+          bounds.extend(layer.getBounds());
+        }
+      });
+    }
+
+    // 2) Si on a des Points -> créer UN polyline qui relie les points dans l'ordre des features
+    if (pointFeatures.length) {
+      // on mappe directement dans l'ordre donné par le GeoJSON
+      const coords = pointFeatures
+        .map(f => {
+          const c = f.geometry && f.geometry.coordinates;
+          // GeoJSON coord = [lon, lat]
+          return (Array.isArray(c) && c.length >= 2) ? [Number(c[1]), Number(c[0])] : null;
+        })
+        .filter(Boolean);
+
+      if (coords.length >= 2) {
+        // polyline principale (classe flowing-line actuel -> couleur + dash via CSS)
+        const main = L.polyline(coords, strokeOpts).addTo(bievreActuelleGroup);
+        const glow = L.polyline(coords, glowOpts).addTo(bievreActuelleGroup);
+
+        tryApplyAnimation(main, false);
+        tryApplyAnimation(glow, true);
+
+        bounds.extend(main.getBounds());
+      } else {
+        console.warn('GeoJSON actuel contient des Points mais pas assez de coordonnées pour faire une polyline.');
+      }
+    }
+
+    // 3) si ni lines ni points utiles -> tenter fallback (ex: GeoJSON simple LineString au root)
+    if (!lineFeatures.length && !pointFeatures.length) {
+      // tentative fallback : si geojson lui-même est une geometry LineString
+      if (geojson && geojson.type === 'LineString' && Array.isArray(geojson.coordinates)) {
+        const coords = geojson.coordinates.map(c => [Number(c[1]), Number(c[0])]);
+        if (coords.length >= 2) {
+          const main = L.polyline(coords, strokeOpts).addTo(bievreActuelleGroup);
+          const glow = L.polyline(coords, glowOpts).addTo(bievreActuelleGroup);
+          tryApplyAnimation(main, false);
+          tryApplyAnimation(glow, true);
+          bounds.extend(main.getBounds());
+        }
+      } else {
+        console.warn('GeoJSON Bièvre actuelle : aucun feature utile détecté (points/lines).');
+      }
+    }
+
+    // fitBounds si possible
+    if (bounds.isValid()) {
+      map.fitBounds(bounds, { padding: [60, 60] });
+      console.info('GeoJSON Bièvre actuelle dessiné et centrée.', geojsonActuelURL);
+    } else {
+      console.info('GeoJSON Bièvre actuelle chargé mais impossible de calculer les limites (bounds invalides).');
+    }
+
+    // ajout control.layers si souhaité (groupe déjà ajouté)
+    if (typeof L.control.layers === 'function') {
+      L.control.layers(null, { "La Bièvre — aujourd'hui": bievreActuelleGroup }, { collapsed: false, position: 'topright' }).addTo(map);
+    }
+  })
+  .catch(err => {
+    console.error('Erreur chargement GeoJSON Bièvre actuelle:', err);
+  });
+
+/* fin tracé Bièvre actuelle */
+
+
+
+
+
+
+
 
 
 /* ===========================

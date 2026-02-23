@@ -35,7 +35,7 @@
     "name": "La Bièvre",
     "note": "projet département 2016\nRéouverture de la Bièvre en 2021\nDébut des travaux Automne 2019.",
     "ref:sandre": "F70-0400",
-    "source": "http://www.arcueil.fr/reouverture-de-la-bievre-a-arcueil-gentilly/",
+    "source": "https://www.arcueil.fr/reouverture-de-la-bievre-a-arcueil-gentilly/",
     "tunnel": "culvert",
     "waterway": "stream"
   }
@@ -288,7 +288,7 @@
   "tags": {
     "name": "La Bièvre",
     "ref:sandre": "F70-0400",
-    "source": "http://www.arcueil.fr/reouverture-de-la-bievre-a-arcueil-gentilly/",
+    "source": "https://www.arcueil.fr/reouverture-de-la-bievre-a-arcueil-gentilly/",
     "waterway": "stream"
   }
 },
@@ -368,7 +368,7 @@
     "name": "La Bièvre",
     "note": "tracé d'après Carthage et rares observations de terrain et film d'Olivier Le Vaillant",
     "ref:sandre": "F70-0400",
-    "source": "http://www.arcueil.fr/reouverture-de-la-bievre-a-arcueil-gentilly/",
+    "source": "https://www.arcueil.fr/reouverture-de-la-bievre-a-arcueil-gentilly/",
     "tunnel": "culvert",
     "waterway": "stream"
   }
